@@ -1,36 +1,52 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🖋️ Unbound
 
-## Getting Started
+**Unbound** is a hyper-premium, immersive digital storytelling engine built with Next.js and Supabase. It transforms simple text entries into cinematic, physically responsive "Digital Books". Rather than forcing users to create accounts, Unbound relies on cryptographically secure invite links—allowing anyone to curate a private library and share it with breathtaking physical realism.
 
-First, run the development server:
+## ✨ Features
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+- **3D Page Physics:** Built upon intense CSS transformations and `react-pageflip`, dragging a page curls the "paper" flawlessly just like a hardcover novel, complete with real-time shadow casting.
+- **Ambient Page Audio:** Interlocked seamlessly with the HTML5 Audio API—flipping a page triggers an authentic acoustic paper-turn sound effect.
+- **Dynamic Background Envrionments:** Authors can choose between `Mahogany`, `Marble`, or `Dark Café` desk textures which dynamically alter the cinematic ambiance the reader experiences.
+- **"Page 0" Cursive Dedication:** The engine automatically generates a faintly glowing, handwritten dedication page directed exclusively at the recipient before Chapter 1 begins.
+- **TipTap Rich Text Editing:** Go beyond raw text with a deeply customized WYSIWYG editor that injects beautiful typographic scaling and drop-caps on the fly.
+- **Floating Polaroids:** Authors can upload direct snap-shots that elegantly render as slightly rotated Polaroid photographs inside the stories.
+- **Printable Admission Tickets:** Sharing a book generates an interactive "Library Access Ticket" UI with a scannable QR Code. When hitting `Print`, the app utilizes `@media print` CSS injections to clear the screen entirely and print purely the ticket on cardstock.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 🛠️ Tech Stack
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- **Framework:** Next.js 15 (App Router, Server Actions)
+- **Database / Auth:** Supabase (PostgreSQL, Storage)
+- **Styling:** Pure Vanilla CSS (Utility variables, natively written typography tokens)
+- **Editor:** TipTap
+- **Motion Engine:** react-pageflip & Framer Motion
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 🚀 Getting Started
 
-## Learn More
+Deploying Unbound locally requires an active Supabase project.
 
-To learn more about Next.js, take a look at the following resources:
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/vedantdevelopes/Unbound.git
+   cd Unbound
+   ```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+2. **Install dependencies:**
+   ```bash
+   npm install
+   ```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+3. **Configure Environment Variables:**
+   Create a `.env.local` file at the root of the project with your Supabase credentials:
+   ```env
+   NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
+   NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+   ```
 
-## Deploy on Vercel
+4. **Initialize Database Schema:**
+   Go to your Supabase project's SQL editor and execute the raw contents of `database.sql`. This will automatically build all required tables, Row Level Security rules, and configure the Public Storage Buckets needed for Polaroids and Book Covers!
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+5. **Run the Development Server:**
+   ```bash
+   npm run dev
+   ```
+   *Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.*
