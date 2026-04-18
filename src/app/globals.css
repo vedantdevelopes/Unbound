@@ -1,0 +1,216 @@
+:root {
+  --bg-primary: #E8E4DF;
+  --bg-secondary: #F5F2EE;
+  --bg-gradient: linear-gradient(135deg, #dce5f0, #e8e4df, #dce5f0);
+  --text-primary: #5C4F3D;
+  --text-secondary: #8B7D6B;
+  --accent: #6B5B4E;
+  --accent-hover: #5A4A3D;
+  --border: #D4CFC8;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: var(--font-inter), sans-serif;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Typography styles */
+h1, h2, h3, .font-heading {
+  font-family: var(--font-playfair), serif;
+  font-weight: 400;
+}
+
+.font-serif-italic {
+  font-family: var(--font-instrument), serif;
+  font-style: italic;
+  font-weight: 400;
+}
+
+.font-ui {
+  font-family: var(--font-outfit), sans-serif;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.font-mono {
+  font-family: var(--font-geist-mono), monospace;
+  font-weight: 500;
+  text-transform: uppercase;
+}
+
+/* Button & Form Elements */
+.btn-primary {
+  background-color: var(--accent);
+  color: #fff;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: var(--font-geist-mono), monospace;
+  text-transform: uppercase;
+  font-weight: 500;
+  font-size: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  text-decoration: none;
+}
+
+.btn-primary:hover {
+  background-color: var(--accent-hover);
+  transform: translateY(-1px);
+}
+
+.btn-secondary {
+  background-color: transparent;
+  color: var(--accent);
+  padding: 0.6rem 1.25rem;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  font-family: var(--font-geist-mono), monospace;
+  text-transform: uppercase;
+  font-weight: 500;
+  font-size: 12px;
+  text-decoration: none;
+}
+
+.btn-secondary:hover {
+  background-color: var(--border);
+}
+
+input[type="text"], textarea {
+  width: 100%;
+  padding: 1rem;
+  background-color: transparent;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text-primary);
+  font-size: 16px;
+  font-family: inherit;
+  transition: border-color 0.2s ease;
+  margin-bottom: 1.5rem;
+}
+
+input[type="text"]:focus, textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+input::placeholder, textarea::placeholder {
+  color: var(--text-secondary);
+}
+
+.label {
+  display: block;
+  font-family: var(--font-outfit), sans-serif;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-secondary);
+  margin-bottom: 0.5rem;
+}
+
+/* Layout Utilities (Vanilla CSS approach) */
+.page-wrapper {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.header {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.logo {
+  font-size: 24px;
+  text-decoration: none;
+  color: var(--text-primary);
+}
+
+.hero-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 0 1rem;
+  margin-top: -80px; /* Offset for header */
+}
+
+.hero-title {
+  font-size: clamp(3rem, 8vw, 6rem);
+  line-height: 1.1;
+  color: var(--text-primary);
+  margin-bottom: 3rem;
+  max-width: 800px;
+}
+
+/* Book page cards */
+.page-card {
+  background-color: var(--bg-secondary);
+  border-radius: 8px;
+  padding: 2rem;
+  background-image: var(--bg-gradient);
+  box-shadow: 0 4px 24px rgba(0,0,0,0.05);
+  border: 1px solid rgba(255,255,255,0.4);
+}
+
+/* Center Form Wrapper */
+.form-container {
+  max-width: 500px;
+  margin: 4rem auto;
+  padding: 0 1rem;
+}
+
+.form-header {
+  text-align: center;
+  font-size: 2.5rem;
+  margin-bottom: 3rem;
+}
+
+/* Banner Component */
+.banner {
+  background-color: var(--accent);
+  color: white;
+  padding: 0.5rem 1rem;
+  text-align: center;
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 12px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  position: relative;
+}
+
+.banner span {
+  opacity: 0.9;
+}
+
+.book-spine:hover {
+  transform: translateY(-10px) scale(1.02);
+}
+
+.font-cursive {
+  font-family: var(--font-cursive), cursive;
+}
