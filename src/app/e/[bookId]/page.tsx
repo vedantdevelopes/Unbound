@@ -106,7 +106,7 @@ export default async function EditDashboard({ params }: { params: Promise<{ book
                       </div>
                     )}
                   </div>
-                  <h4 className="font-ui" style={{ marginTop: '1.5rem', letterSpacing: '0.1em' }}>{book.title}</h4>
+                  <h4 className="font-ui" style={{ marginTop: '1.5rem', letterSpacing: '0.1em', maxWidth: '220px', textAlign: 'center', wordBreak: 'break-word', lineHeight: 1.4 }}>{book.title}</h4>
                 </Link>
               ))}
             </div>
