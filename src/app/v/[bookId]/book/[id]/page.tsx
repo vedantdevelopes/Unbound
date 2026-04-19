@@ -2,13 +2,14 @@ import { supabase } from '@/lib/supabase';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import BookReader from '@/components/BookReader';
+import { deriveKey, decryptField } from '@/lib/crypto';
 
 export default async function ViewPublicBook({ params }: { params: Promise<{ bookId: string, id: string }> | { bookId: string, id: string } }) {
   const unwrappedParams = params instanceof Promise ? await params : params;
   const viewId = unwrappedParams.bookId;
   const trueBookId = unwrappedParams.id;
 
-  // Verify the book belongs to the collection specified by viewId
+  // Fetch collection to verify ownership and get the encryption key root
   const { data: collection, error: colError } = await supabase
     .from('collections')
     .select('id, theme, recipient_name, sender_name')
@@ -30,30 +31,58 @@ export default async function ViewPublicBook({ params }: { params: Promise<{ boo
     notFound();
   }
 
-  // Securely filter out drafts and sort remainder
-  const pages = book.pages
-    ?.filter((p: any) => p.is_published === true)
-    .sort((a: any, b: any) => 
-      new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
-    ) || [];
+  // ─── Decrypt ──────────────────────────────────────────────────────────────
+  const key = deriveKey(collection.id);
 
-  const themeBackgrounds: any = {
-      wood: 'url("https://www.transparenttextures.com/patterns/wood-pattern.png"), linear-gradient(135deg, #4A3525, #2B1D14)',
-      marble: 'url("https://www.transparenttextures.com/patterns/white-marble.png"), linear-gradient(135deg, #F5F5F5, #E0E0E0)',
-      cafe: 'url("https://www.transparenttextures.com/patterns/dark-matter.png"), linear-gradient(135deg, #1A1A1A, #0D0D0D)'
+  // Decrypt collection fields (used in the Dedication Page)
+  const decryptedCollection = {
+    ...collection,
+    recipient_name: decryptField(collection.recipient_name, key),
+    sender_name:    decryptField(collection.sender_name, key),
   };
-  const activeBackground = themeBackgrounds[collection.theme || 'wood'];
+
+  // Decrypt book title
+  const bookTitle = decryptField(book.title, key);
+
+  // Decrypt pages — filter out drafts, sort chronologically
+  const pages = (book.pages ?? [])
+    .filter((p: { is_published: boolean }) => p.is_published === true)
+    .sort((a: { created_at: string }, b: { created_at: string }) =>
+      new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+    )
+    .map((page: { id: string; title: string; content: string; is_published: boolean; media_urls: string[]; created_at: string }) => ({
+      ...page,
+      title:   decryptField(page.title, key),
+      content: decryptField(page.content, key),
+    }));
+  // ─────────────────────────────────────────────────────────────────────────
+
+  const themeBackgrounds: Record<string, string> = {
+    wood:   'url("https://www.transparenttextures.com/patterns/wood-pattern.png"), linear-gradient(135deg, #4A3525, #2B1D14)',
+    marble: 'url("https://www.transparenttextures.com/patterns/white-marble.png"), linear-gradient(135deg, #F5F5F5, #E0E0E0)',
+    cafe:   'url("https://www.transparenttextures.com/patterns/dark-matter.png"), linear-gradient(135deg, #1A1A1A, #0D0D0D)',
+  };
+  const activeBackground = themeBackgrounds[collection.theme ?? 'wood'] ?? themeBackgrounds.wood;
+  const headerColor = collection.theme === 'marble' ? '#222' : '#fff';
 
   return (
-    <main className="page-wrapper relative" style={{ overflow: 'hidden', background: activeBackground, minHeight: '100vh', transition: 'background 0.5s ease' }}>
+    <main className="page-wrapper relative" style={{ overflow: 'hidden', background: activeBackground, minHeight: '100vh' }}>
       <header className="header" style={{ justifyContent: 'space-between' }}>
-        <Link href={`/v/${viewId}`} className="font-mono" style={{ textDecoration: 'none', color: collection.theme === 'marble' ? '#222' : '#fff', textShadow: '0 2px 4px rgba(0,0,0,0.5)' }}>&larr; BACK TO SHELF</Link>
-        <div className="logo font-serif-italic" style={{ color: collection.theme === 'marble' ? '#222' : '#fff', textShadow: '0 2px 4px rgba(0,0,0,0.5)' }}>unbound</div>
-        <div style={{ width: '130px' }}></div> 
+        <Link
+          href={`/v/${viewId}`}
+          className="font-mono"
+          style={{ textDecoration: 'none', color: headerColor, textShadow: '0 2px 4px rgba(0,0,0,0.5)' }}
+        >
+          &larr; BACK TO SHELF
+        </Link>
+        <div className="logo font-serif-italic" style={{ color: headerColor, textShadow: '0 2px 4px rgba(0,0,0,0.5)' }}>
+          unbound
+        </div>
+        <div style={{ width: '130px' }} />
       </header>
 
       <div className="container" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '80vh' }}>
-        <BookReader pages={pages} bookTitle={book.title} collection={collection} />
+        <BookReader pages={pages} bookTitle={bookTitle} collection={decryptedCollection} />
       </div>
     </main>
   );

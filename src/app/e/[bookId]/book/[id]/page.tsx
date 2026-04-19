@@ -1,6 +1,7 @@
 import { supabase } from '@/lib/supabase';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import { deriveKey, decryptField } from '@/lib/crypto';
 
 export default async function BookPagesDashboard({ params }: { params: Promise<{ bookId: string, id: string }> | { bookId: string, id: string } }) {
   const unwrappedParams = params instanceof Promise ? await params : params;
@@ -10,7 +11,7 @@ export default async function BookPagesDashboard({ params }: { params: Promise<{
   // Verify the book belongs to the collection specified by editId
   const { data: collection, error: colError } = await supabase
     .from('collections')
-    .select('id, recipient_name')
+    .select('id')
     .eq('edit_id', editId)
     .single();
 
@@ -29,10 +30,20 @@ export default async function BookPagesDashboard({ params }: { params: Promise<{
     notFound();
   }
 
-  // Sort pages
-  const pages = book.pages?.sort((a: any, b: any) => 
-    new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
-  ) || [];
+  // ─── Decrypt ──────────────────────────────────────────────────────────────
+  const key = deriveKey(collection.id);
+  const bookTitle = decryptField(book.title, key);
+
+  const pages = (book.pages ?? [])
+    .sort((a: { created_at: string }, b: { created_at: string }) =>
+      new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+    )
+    .map((page: { id: string; title: string; content: string; is_published: boolean; created_at: string }) => ({
+      ...page,
+      title:   decryptField(page.title, key),
+      content: decryptField(page.content, key),
+    }));
+  // ─────────────────────────────────────────────────────────────────────────
 
   return (
     <main className="page-wrapper relative">
@@ -41,17 +52,17 @@ export default async function BookPagesDashboard({ params }: { params: Promise<{
         <Link href="/" className="logo font-serif-italic">unbound</Link>
         <div style={{ display: 'flex', gap: '1rem' }}>
           <Link href={`/e/${editId}/book/${trueBookId}/new`} className="btn-secondary">
-             WRITE PAGE
+            WRITE PAGE
           </Link>
         </div>
       </header>
 
       <div className="container" style={{ textAlign: 'center', marginTop: '2rem' }}>
         <h1 className="font-heading" style={{ fontSize: '3rem', marginBottom: '1rem' }}>
-          {book.title}
+          {bookTitle}
         </h1>
         <p style={{ color: 'var(--text-secondary)' }}>{pages.length} pages in this book</p>
-        
+
         <div style={{ marginTop: '4rem' }}>
           {pages.length === 0 ? (
             <div>
@@ -64,12 +75,12 @@ export default async function BookPagesDashboard({ params }: { params: Promise<{
             </div>
           ) : (
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '2rem', justifyContent: 'center' }}>
-              {pages.map((page: any, index: number) => (
-                <div key={page.id} className="page-card" style={{ 
-                  width: '300px', 
-                  height: '400px', 
-                  cursor: 'pointer', 
-                  display: 'flex', 
+              {pages.map((page: { id: string; title: string; content: string; is_published: boolean }, index: number) => (
+                <div key={page.id} className="page-card" style={{
+                  width: '300px',
+                  height: '400px',
+                  cursor: 'pointer',
+                  display: 'flex',
                   flexDirection: 'column',
                   opacity: page.is_published ? 1 : 0.7,
                   border: page.is_published ? 'auto' : '1px dashed var(--border)',
