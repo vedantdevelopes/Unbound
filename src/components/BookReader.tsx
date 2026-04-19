@@ -369,10 +369,10 @@ export default function BookReader({ pages, bookTitle, collection }: BookReaderP
     </div>
   );
 
-  const slideVariants = {
-    enter: (dir: number) => ({ x: dir > 0 ? 30 : -30, opacity: 0 }),
-    center: { x: 0, opacity: 1 },
-    exit: (dir: number) => ({ x: dir > 0 ? -30 : 30, opacity: 0 }),
+  const fadeVariants = {
+    enter: { opacity: 0 },
+    center: { opacity: 1 },
+    exit: { opacity: 0 },
   };
 
   return (
@@ -482,15 +482,14 @@ export default function BookReader({ pages, bookTitle, collection }: BookReaderP
               style={{ position: 'absolute', right: 0, top: 0, bottom: 0, width: '15%', zIndex: 20, cursor: currentIndex < maxIndex ? 'e-resize' : 'default' }}
             />
 
-            <AnimatePresence initial={false} custom={direction} mode="popLayout">
+            <AnimatePresence initial={false} mode="wait">
               <motion.div
                 key={currentIndex}
-                custom={direction}
-                variants={slideVariants}
+                variants={fadeVariants}
                 initial="enter"
                 animate="center"
                 exit="exit"
-                transition={{ ease: [0.25, 1, 0.5, 1], duration: 0.5 }}
+                transition={{ duration: 0.2 }}
                 style={{
                   display: 'flex',
                   width: '100%',
