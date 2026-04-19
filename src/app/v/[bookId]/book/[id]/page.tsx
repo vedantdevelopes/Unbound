@@ -67,17 +67,17 @@ export default async function ViewPublicBook({ params }: { params: Promise<{ boo
 
   return (
     <main className="page-wrapper relative" style={{ overflow: 'hidden', background: activeBackground, minHeight: '100vh' }}>
-      <header className="header" style={{ justifyContent: 'space-between' }}>
+      <header className="header" style={{ justifyContent: 'space-between', position: 'relative', zIndex: 100 }}>
         <Link
           href={`/v/${viewId}`}
-          className="font-mono"
+          className="font-mono hover-glow"
           style={{ textDecoration: 'none', color: headerColor, textShadow: '0 2px 4px rgba(0,0,0,0.5)' }}
         >
           &larr; BACK TO SHELF
         </Link>
-        <div className="logo font-serif-italic" style={{ color: headerColor, textShadow: '0 2px 4px rgba(0,0,0,0.5)' }}>
+        <Link href="/" className="logo font-serif-italic hover-glow" style={{ textDecoration: 'none', color: headerColor, textShadow: '0 2px 4px rgba(0,0,0,0.5)' }}>
           unbound
-        </div>
+        </Link>
         <div style={{ width: '130px' }} />
       </header>
 

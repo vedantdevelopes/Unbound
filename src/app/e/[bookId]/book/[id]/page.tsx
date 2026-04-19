@@ -47,9 +47,9 @@ export default async function BookPagesDashboard({ params }: { params: Promise<{
 
   return (
     <main className="page-wrapper relative">
-      <header className="header" style={{ borderBottom: '1px solid var(--border)' }}>
-        <Link href={`/e/${editId}`} className="font-mono" style={{ textDecoration: 'none', color: 'var(--text-primary)' }}>&larr; LIBRARY</Link>
-        <Link href="/" className="logo font-serif-italic">unbound</Link>
+      <header className="header" style={{ borderBottom: '1px solid var(--border)', position: 'relative', zIndex: 100 }}>
+        <Link href={`/e/${editId}`} className="font-mono hover-glow" style={{ textDecoration: 'none', color: 'var(--text-primary)' }}>&larr; LIBRARY</Link>
+        <Link href="/" className="logo font-serif-italic hover-glow">unbound</Link>
         <div style={{ display: 'flex', gap: '1rem' }}>
           <Link href={`/e/${editId}/book/${trueBookId}/new`} className="btn-secondary">
             WRITE PAGE
