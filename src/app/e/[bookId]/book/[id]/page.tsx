@@ -84,7 +84,7 @@ export default async function BookPagesDashboard({ params }: { params: Promise<{
                     {page.title}
                   </h3>
                   <div style={{ flex: 1, overflow: 'hidden', color: 'var(--text-secondary)', textAlign: 'left', WebkitMaskImage: 'linear-gradient(180deg, #000 60%, transparent)' }}>
-                    {page.content}
+                    {page.content?.replace(/<[^>]*>/g, ' ').trim()}
                   </div>
                   <div className="label" style={{ marginTop: '1rem', textAlign: 'right' }}>Page {index + 1}</div>
                 </div>

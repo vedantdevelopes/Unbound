@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, forwardRef } from 'react';
+import { useRef, forwardRef } from 'react';
 import dynamic from 'next/dynamic';
 
 const HTMLFlipBook = dynamic(() => import('react-pageflip').then(mod => mod.default as any), { ssr: false });
@@ -194,7 +194,7 @@ export default function BookReader({ pages, bookTitle, collection }: { pages: an
           }}></div>
 
           <div style={{ zIndex: 1 }}>
-            {/* @ts-ignore */}
+            {/* @ts-expect-error - react-pageflip lacks TypeScript types */}
             <HTMLFlipBook 
               width={450} 
               height={650} 

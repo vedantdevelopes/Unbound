@@ -101,8 +101,10 @@ export async function addPage(editId: string, bookId: string, formData: FormData
   const submitAction = formData.get('action') as string;
   const polaroidFile = formData.get('polaroid_file') as File | null;
 
-  if (!title || !content) {
-    throw new Error('Required fields missing');
+  // TipTap sends '<p></p>' as empty content — strip tags to check real length
+  const strippedContent = content?.replace(/<[^>]*>/g, '').trim();
+  if (!title || !strippedContent) {
+    throw new Error('Title and content are both required');
   }
 
   const is_published = submitAction !== 'draft';
@@ -134,8 +136,8 @@ export async function addPage(editId: string, bookId: string, formData: FormData
     ]);
 
   if (error) {
-    console.error('Error adding page:', error);
-    throw new Error('Failed to add page');
+    console.error('Error adding page:', JSON.stringify(error));
+    throw new Error(`Failed to add page: ${error.message}`);
   }
 
   // Redirect back to the book editor
