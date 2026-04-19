@@ -171,8 +171,8 @@ export default function BookReader({ pages, bookTitle, collection }: BookReaderP
       setTimeout(() => {
         setDirection(1);
         setCurrentIndex(prev => Math.min(prev + 1, maxIndex));
-      }, 450); // Swap content exactly when page is standing up at 90 degrees
-      setTimeout(() => setFlipping(null), 900);
+      }, 550);
+      setTimeout(() => setFlipping(null), 1100);
     }
   };
 
@@ -182,8 +182,8 @@ export default function BookReader({ pages, bookTitle, collection }: BookReaderP
       setTimeout(() => {
         setDirection(-1);
         setCurrentIndex(prev => Math.min(prev - 1, maxIndex));
-      }, 450);
-      setTimeout(() => setFlipping(null), 900);
+      }, 550);
+      setTimeout(() => setFlipping(null), 1100);
     }
   };
 
@@ -426,6 +426,85 @@ export default function BookReader({ pages, bookTitle, collection }: BookReaderP
         }
         .tiptap-body hr::after { content: '✦ ✦ ✦'; font-size: 0.7rem; letter-spacing: 0.5em; }
         .tiptap-body strong { color: #2a2626; }
+
+        /* ── Page-flip keyframes ─────────────────────────────────────────── */
+        @keyframes pageFlipNext {
+          0%   { clip-path: polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%); transform: scaleX(1)   skewY(0deg);  }
+          15%  { clip-path: polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%); transform: scaleX(0.92) skewY(-1.5deg); }
+          50%  { clip-path: polygon(0% 0%, 50%  0%,  50% 100%, 0% 100%); transform: scaleX(0.5)  skewY(-3deg);  }
+          85%  { clip-path: polygon(0% 0%, 5%   0%,  5%  100%, 0% 100%); transform: scaleX(0.08) skewY(-1deg);  }
+          100% { clip-path: polygon(0% 0%, 0%   0%,  0%  100%, 0% 100%); transform: scaleX(0)    skewY(0deg);  }
+        }
+        @keyframes pageFlipNextShadow {
+          0%   { opacity: 0;   transform: scaleX(1);    }
+          20%  { opacity: 0.6; transform: scaleX(0.85); }
+          50%  { opacity: 0.9; transform: scaleX(0.5);  }
+          80%  { opacity: 0.4; transform: scaleX(0.15); }
+          100% { opacity: 0;   transform: scaleX(0);    }
+        }
+        @keyframes pageFlipPrev {
+          0%   { clip-path: polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%); transform: scaleX(1)   skewY(0deg); }
+          15%  { clip-path: polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%); transform: scaleX(0.92) skewY(1.5deg); }
+          50%  { clip-path: polygon(50% 0%, 100% 0%, 100% 100%, 50% 100%); transform: scaleX(0.5) skewY(3deg);  }
+          85%  { clip-path: polygon(95% 0%, 100% 0%, 100% 100%, 95% 100%); transform: scaleX(0.08) skewY(1deg); }
+          100% { clip-path: polygon(100% 0%, 100% 0%, 100% 100%, 100% 100%); transform: scaleX(0) skewY(0deg); }
+        }
+        @keyframes pageFlipPrevShadow {
+          0%   { opacity: 0;   transform: scaleX(1);    }
+          20%  { opacity: 0.6; transform: scaleX(0.85); }
+          50%  { opacity: 0.9; transform: scaleX(0.5);  }
+          80%  { opacity: 0.4; transform: scaleX(0.15); }
+          100% { opacity: 0;   transform: scaleX(0);    }
+        }
+        @keyframes spineGlow {
+          0%   { opacity: 0; }
+          30%  { opacity: 1; }
+          70%  { opacity: 1; }
+          100% { opacity: 0; }
+        }
+        .flip-page-next {
+          animation: pageFlipNext 1.1s cubic-bezier(0.645, 0.045, 0.355, 1.000) forwards;
+          transform-origin: left center;
+          position: absolute; right: 0; top: 0; bottom: 0; width: 50%;
+          background-color: #FDFBF9;
+          z-index: 60;
+          pointer-events: none;
+          box-shadow: -8px 0 25px rgba(0,0,0,0.25);
+        }
+        .flip-page-next-shadow {
+          animation: pageFlipNextShadow 1.1s cubic-bezier(0.645, 0.045, 0.355, 1.000) forwards;
+          transform-origin: right center;
+          position: absolute; left: 0; top: 0; bottom: 0; width: 52%;
+          background: linear-gradient(to right, transparent 60%, rgba(0,0,0,0.18) 100%);
+          z-index: 50;
+          pointer-events: none;
+        }
+        .flip-page-prev {
+          animation: pageFlipPrev 1.1s cubic-bezier(0.645, 0.045, 0.355, 1.000) forwards;
+          transform-origin: right center;
+          position: absolute; left: 0; top: 0; bottom: 0; width: 50%;
+          background-color: #FDFBF9;
+          z-index: 60;
+          pointer-events: none;
+          box-shadow: 8px 0 25px rgba(0,0,0,0.25);
+        }
+        .flip-page-prev-shadow {
+          animation: pageFlipPrevShadow 1.1s cubic-bezier(0.645, 0.045, 0.355, 1.000) forwards;
+          transform-origin: left center;
+          position: absolute; right: 0; top: 0; bottom: 0; width: 52%;
+          background: linear-gradient(to left, transparent 60%, rgba(0,0,0,0.18) 100%);
+          z-index: 50;
+          pointer-events: none;
+        }
+        .spine-glow {
+          animation: spineGlow 1.1s ease forwards;
+          position: absolute; left: 50%; top: 0; bottom: 0; width: 3px;
+          transform: translateX(-50%);
+          background: rgba(255,255,255,0.4);
+          z-index: 70;
+          pointer-events: none;
+          box-shadow: 0 0 12px 4px rgba(255,255,255,0.3);
+        }
       ` }} />
 
       <motion.div 
@@ -514,88 +593,38 @@ export default function BookReader({ pages, bookTitle, collection }: BookReaderP
               style={{ position: 'absolute', right: 0, top: 0, bottom: 0, width: '15%', zIndex: 60, cursor: currentIndex < maxIndex ? 'e-resize' : 'default' }}
             />
 
-            {/* 3D Physical Page Flip Simulation - Render only when flipping */}
+            {/* CSS Clip-path Page Peel Flip Simulation */}
             {!isMobile && flipping === 'next' && (
               <>
-                <motion.div
-                  initial={{ rotateY: 0, rotateZ: 0, scale: 1, boxShadow: '-5px 0 10px rgba(0,0,0,0.05)' }}
-                  animate={{ 
-                    rotateY: -180, 
-                    rotateZ: [0, -2, -3, -2, 0], 
-                    scale: [1, 1.03, 1.06, 1.03, 1],
-                    boxShadow: ['-5px 0 10px rgba(0,0,0,0.05)', '-15px 10px 20px rgba(0,0,0,0.1)', '-40px 20px 50px rgba(0,0,0,0.3)', '-15px 10px 20px rgba(0,0,0,0.1)', '-5px 0 10px rgba(0,0,0,0.05)']
-                  }}
-                  transition={{ duration: 0.9, ease: [0.64, 0.04, 0.35, 1], times: [0, 0.25, 0.5, 0.75, 1] }}
-                  style={{
-                    position: 'absolute', right: 0, top: 0, bottom: 0, width: '50%',
-                    transformOrigin: 'left center', backgroundColor: '#FDFBF9', zIndex: 60,
-                    backfaceVisibility: 'hidden', pointerEvents: 'none', borderRadius: '2px 8px 8px 2px',
-                    backgroundImage: `linear-gradient(to right, rgba(0,0,0,0.1) 0%, rgba(255,255,255,0.4) 10%, rgba(0,0,0,0.02) 25%), ${PAPER_TEXTURE_SVG}`
-                  }}
-                >
-                  <motion.div animate={{ opacity: [0, 0.7, 0] }} transition={{ duration: 0.9, ease: "easeInOut" }} style={{ position: 'absolute', inset: 0, background: 'linear-gradient(135deg, transparent 20%, rgba(255,255,255,0.8) 50%, transparent 80%)' }} />
-                </motion.div>
-
-                <motion.div
-                  initial={{ rotateY: 180, rotateZ: 0, scale: 1, boxShadow: '5px 0 10px rgba(0,0,0,0.05)' }}
-                  animate={{ 
-                    rotateY: 0, 
-                    rotateZ: [0, -2, -3, -2, 0], 
-                    scale: [1, 1.03, 1.06, 1.03, 1],
-                    boxShadow: ['5px 0 10px rgba(0,0,0,0.05)', '15px 10px 20px rgba(0,0,0,0.1)', '40px 20px 50px rgba(0,0,0,0.3)', '15px 10px 20px rgba(0,0,0,0.1)', '5px 0 10px rgba(0,0,0,0.05)']
-                  }}
-                  transition={{ duration: 0.9, ease: [0.64, 0.04, 0.35, 1], times: [0, 0.25, 0.5, 0.75, 1] }}
-                  style={{
-                    position: 'absolute', left: 0, top: 0, bottom: 0, width: '50%',
-                    transformOrigin: 'right center', backgroundColor: '#FDFBF9', zIndex: 55,
-                    backfaceVisibility: 'hidden', pointerEvents: 'none', borderRadius: '8px 2px 2px 8px',
-                    backgroundImage: `linear-gradient(to left, rgba(0,0,0,0.1) 0%, rgba(255,255,255,0.4) 10%, rgba(0,0,0,0.02) 25%), ${PAPER_TEXTURE_SVG}`
-                  }}
-                >
-                  <motion.div animate={{ opacity: [0, 0.7, 0] }} transition={{ duration: 0.9, ease: "easeInOut" }} style={{ position: 'absolute', inset: 0, background: 'linear-gradient(-135deg, transparent 20%, rgba(255,255,255,0.8) 50%, transparent 80%)' }} />
-                </motion.div>
+                {/* The actual flipping page - uses CSS keyframes clip-path peel */}
+                <div className="flip-page-next" style={{ backgroundImage: `linear-gradient(to right, rgba(0,0,0,0.06) 0%, rgba(255,255,255,0.5) 8%, rgba(0,0,0,0) 20%), ${PAPER_TEXTURE_SVG}` }}>
+                  {/* Highlight glint that sweeps across the page as it lifts */}
+                  <motion.div
+                    initial={{ x: '100%', opacity: 0 }}
+                    animate={{ x: '-20%', opacity: [0, 1, 1, 0] }}
+                    transition={{ duration: 1.1, ease: [0.645, 0.045, 0.355, 1.0] }}
+                    style={{ position: 'absolute', top: 0, bottom: 0, width: '40%', background: 'linear-gradient(to right, transparent, rgba(255,255,255,0.7), transparent)', pointerEvents: 'none' }}
+                  />
+                </div>
+                {/* Moving cast shadow on the left page */}
+                <div className="flip-page-next-shadow" />
+                {/* Spine light flash at the moment of crossing */}
+                <div className="spine-glow" />
               </>
             )}
 
             {!isMobile && flipping === 'prev' && (
               <>
-                <motion.div
-                  initial={{ rotateY: 0, rotateZ: 0, scale: 1, boxShadow: '5px 0 10px rgba(0,0,0,0.05)' }}
-                  animate={{ 
-                    rotateY: 180, 
-                    rotateZ: [0, 2, 3, 2, 0], 
-                    scale: [1, 1.03, 1.06, 1.03, 1],
-                    boxShadow: ['5px 0 10px rgba(0,0,0,0.05)', '15px 10px 20px rgba(0,0,0,0.1)', '40px 20px 50px rgba(0,0,0,0.3)', '15px 10px 20px rgba(0,0,0,0.1)', '5px 0 10px rgba(0,0,0,0.05)']
-                  }}
-                  transition={{ duration: 0.9, ease: [0.64, 0.04, 0.35, 1], times: [0, 0.25, 0.5, 0.75, 1] }}
-                  style={{
-                    position: 'absolute', left: 0, top: 0, bottom: 0, width: '50%',
-                    transformOrigin: 'right center', backgroundColor: '#FDFBF9', zIndex: 60,
-                    backfaceVisibility: 'hidden', pointerEvents: 'none', borderRadius: '8px 2px 2px 8px',
-                    backgroundImage: `linear-gradient(to left, rgba(0,0,0,0.1) 0%, rgba(255,255,255,0.4) 10%, rgba(0,0,0,0.02) 25%), ${PAPER_TEXTURE_SVG}`
-                  }}
-                >
-                  <motion.div animate={{ opacity: [0, 0.7, 0] }} transition={{ duration: 0.9, ease: "easeInOut" }} style={{ position: 'absolute', inset: 0, background: 'linear-gradient(-135deg, transparent 20%, rgba(255,255,255,0.8) 50%, transparent 80%)' }} />
-                </motion.div>
-
-                <motion.div
-                  initial={{ rotateY: -180, rotateZ: 0, scale: 1, boxShadow: '-5px 0 10px rgba(0,0,0,0.05)' }}
-                  animate={{ 
-                    rotateY: 0, 
-                    rotateZ: [0, 2, 3, 2, 0], 
-                    scale: [1, 1.03, 1.06, 1.03, 1],
-                    boxShadow: ['-5px 0 10px rgba(0,0,0,0.05)', '-15px 10px 20px rgba(0,0,0,0.1)', '-40px 20px 50px rgba(0,0,0,0.3)', '-15px 10px 20px rgba(0,0,0,0.1)', '-5px 0 10px rgba(0,0,0,0.05)']
-                  }}
-                  transition={{ duration: 0.9, ease: [0.64, 0.04, 0.35, 1], times: [0, 0.25, 0.5, 0.75, 1] }}
-                  style={{
-                    position: 'absolute', right: 0, top: 0, bottom: 0, width: '50%',
-                    transformOrigin: 'left center', backgroundColor: '#FDFBF9', zIndex: 55,
-                    backfaceVisibility: 'hidden', pointerEvents: 'none', borderRadius: '2px 8px 8px 2px',
-                    backgroundImage: `linear-gradient(to right, rgba(0,0,0,0.1) 0%, rgba(255,255,255,0.4) 10%, rgba(0,0,0,0.02) 25%), ${PAPER_TEXTURE_SVG}`
-                  }}
-                >
-                  <motion.div animate={{ opacity: [0, 0.7, 0] }} transition={{ duration: 0.9, ease: "easeInOut" }} style={{ position: 'absolute', inset: 0, background: 'linear-gradient(135deg, transparent 20%, rgba(255,255,255,0.8) 50%, transparent 80%)' }} />
-                </motion.div>
+                <div className="flip-page-prev" style={{ backgroundImage: `linear-gradient(to left, rgba(0,0,0,0.06) 0%, rgba(255,255,255,0.5) 8%, rgba(0,0,0,0) 20%), ${PAPER_TEXTURE_SVG}` }}>
+                  <motion.div
+                    initial={{ x: '-100%', opacity: 0 }}
+                    animate={{ x: '20%', opacity: [0, 1, 1, 0] }}
+                    transition={{ duration: 1.1, ease: [0.645, 0.045, 0.355, 1.0] }}
+                    style={{ position: 'absolute', top: 0, bottom: 0, width: '40%', background: 'linear-gradient(to left, transparent, rgba(255,255,255,0.7), transparent)', pointerEvents: 'none' }}
+                  />
+                </div>
+                <div className="flip-page-prev-shadow" />
+                <div className="spine-glow" />
               </>
             )}
 
