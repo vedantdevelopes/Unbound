@@ -88,7 +88,16 @@ export default function RichTextEditor({ content, onChange }: { content: string,
   return (
     <div style={{ border: '1px solid transparent', display: 'flex', flexDirection: 'column' }}>
       <MenuBar editor={editor} />
-      <EditorContent editor={editor} />
+      <div style={{
+        minHeight: '300px',
+        maxHeight: '50vh',
+        overflowY: 'auto',
+        padding: '1rem 0',
+        scrollbarWidth: 'thin',
+        scrollbarColor: 'var(--border) transparent',
+      }}>
+        <EditorContent editor={editor} />
+      </div>
       {/* Global styles for TipTap content rendering */}
       <style dangerouslySetInnerHTML={{__html: `
         .tiptap-body blockquote {
@@ -109,6 +118,8 @@ export default function RichTextEditor({ content, onChange }: { content: string,
             border-top: 1px dotted var(--border);
             margin: 2rem 0;
         }
+        .tiptap-body p { margin-bottom: 0.8rem; }
+        .tiptap-body p:last-child { margin-bottom: 0; }
       `}} />
     </div>
   );

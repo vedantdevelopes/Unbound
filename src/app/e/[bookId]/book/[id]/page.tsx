@@ -76,7 +76,12 @@ export default async function BookPagesDashboard({ params }: { params: Promise<{
           ) : (
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '2rem', justifyContent: 'center' }}>
               {pages.map((page: { id: string; title: string; content: string; is_published: boolean }, index: number) => (
-                <div key={page.id} className="page-card" style={{
+                <Link
+                  key={page.id}
+                  href={`/e/${editId}/book/${trueBookId}/edit/${page.id}`}
+                  style={{ textDecoration: 'none', color: 'inherit' }}
+                >
+                <div className="page-card" style={{
                   width: '300px',
                   height: '400px',
                   cursor: 'pointer',
@@ -84,21 +89,28 @@ export default async function BookPagesDashboard({ params }: { params: Promise<{
                   flexDirection: 'column',
                   opacity: page.is_published ? 1 : 0.7,
                   border: page.is_published ? 'auto' : '1px dashed var(--border)',
-                  position: 'relative'
+                  position: 'relative',
+                  transition: 'transform 0.2s ease, box-shadow 0.2s ease',
                 }}>
-                  {!page.is_published && (
-                    <div style={{ position: 'absolute', top: '1rem', right: '1rem', background: 'var(--accent)', color: 'white', padding: '0.2rem 0.6rem', fontSize: '10px', borderRadius: '4px', letterSpacing: '0.1em' }} className="font-ui">
-                      DRAFT
-                    </div>
-                  )}
-                  <h3 className="font-heading" style={{ fontSize: '1.5rem', marginBottom: '1rem', paddingRight: !page.is_published ? '3rem' : '0' }}>
+                  <div style={{ position: 'absolute', top: '1rem', right: '1rem', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px' }}>
+                    {!page.is_published && (
+                      <div style={{ background: 'var(--accent)', color: 'white', padding: '0.2rem 0.6rem', fontSize: '10px', borderRadius: '4px', letterSpacing: '0.1em' }} className="font-ui">
+                        DRAFT
+                      </div>
+                    )}
+                  </div>
+                  <h3 className="font-heading" style={{ fontSize: '1.5rem', marginBottom: '1rem', paddingRight: '3rem' }}>
                     {page.title}
                   </h3>
                   <div style={{ flex: 1, overflow: 'hidden', color: 'var(--text-secondary)', textAlign: 'left', WebkitMaskImage: 'linear-gradient(180deg, #000 60%, transparent)' }}>
                     {page.content?.replace(/<[^>]*>/g, ' ').trim()}
                   </div>
-                  <div className="label" style={{ marginTop: '1rem', textAlign: 'right' }}>Page {index + 1}</div>
+                  <div style={{ marginTop: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span className="label" style={{ color: 'var(--accent)', fontSize: '10px' }}>TAP TO EDIT</span>
+                    <span className="label">Page {index + 1}</span>
+                  </div>
                 </div>
+                </Link>
               ))}
             </div>
           )}

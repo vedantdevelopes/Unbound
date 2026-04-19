@@ -163,3 +163,45 @@ export async function addPage(editId: string, bookId: string, formData: FormData
 
   redirect(`/e/${editId}/book/${bookId}`);
 }
+
+export async function updatePage(editId: string, bookId: string, pageId: string, formData: FormData) {
+  const title = formData.get('title') as string;
+  const content = formData.get('content') as string;
+  const submitAction = formData.get('action') as string;
+
+  const strippedContent = content?.replace(/<[^>]*>/g, '').trim();
+  if (!title || !strippedContent) {
+    throw new Error('Title and content are both required');
+  }
+
+  const is_published = submitAction !== 'draft';
+
+  // Fetch collection for encryption key
+  const { data: collection, error: colError } = await supabase
+    .from('collections')
+    .select('id')
+    .eq('edit_id', editId)
+    .single();
+
+  if (colError || !collection) {
+    throw new Error('Could not resolve collection');
+  }
+
+  const key = deriveKey(collection.id);
+
+  const { error } = await supabase
+    .from('pages')
+    .update({
+      title:  encryptField(title, key),
+      content: encryptField(content, key),
+      is_published,
+    })
+    .eq('id', pageId);
+
+  if (error) {
+    console.error('Error updating page:', JSON.stringify(error));
+    throw new Error(`Failed to update page: ${error.message}`);
+  }
+
+  redirect(`/e/${editId}/book/${bookId}`);
+}
