@@ -62,6 +62,18 @@ const PageContainer = ({
           backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`,
         }}
       />
+      {/* 3D Page Curve Shading */}
+      <div
+        style={{
+          position: 'absolute',
+          top: 0, left: 0, right: 0, bottom: 0,
+          pointerEvents: 'none',
+          background: isLeftPage 
+            ? 'linear-gradient(to right, rgba(0,0,0,0) 80%, rgba(0,0,0,0.02) 92%, rgba(0,0,0,0.12) 100%)' 
+            : (isRightPage ? 'linear-gradient(to right, rgba(0,0,0,0.12) 0%, rgba(0,0,0,0.02) 8%, rgba(0,0,0,0) 20%)' : 'none'),
+          zIndex: 0,
+        }}
+      />
       {/* Inner wrapper for content */}
       <div 
         style={{ 
@@ -71,9 +83,9 @@ const PageContainer = ({
           flexDirection: 'column', 
           overflowY: scrollable ? 'auto' : 'hidden', 
           overflowX: 'hidden',
-          paddingRight: scrollable && !isMobile ? '10px' : '0', // tiny padding for scroll
+          paddingRight: '0', 
         }} 
-        className={scrollable ? "custom-scroll" : ""}
+        className={scrollable ? "hide-scroll" : ""}
       >
         {children}
       </div>
@@ -440,9 +452,9 @@ export default function BookReader({ pages, bookTitle, collection }: BookReaderP
             width: '100%',
             height: '100%',
             position: 'relative',
-            backgroundColor: '#F7F4EF',
+            backgroundColor: '#FDFBF9',
             borderRadius: isMobile ? '2px 8px 8px 2px' : '4px',
-            boxShadow: '0 0 10px rgba(0,0,0,0.8), inset 0 0 10px rgba(0,0,0,0.05)'
+            boxShadow: '0 0 10px rgba(0,0,0,0.8), 2px 2px 0px #FDFBF9, 3px 3px 0px #E5E0D5, 4px 4px 0px #FDFBF9, 5px 5px 0px #E5E0D5, 6px 6px 15px rgba(0,0,0,0.4), inset 0 0 20px rgba(0,0,0,0.03)'
           }}>
 
             {/* Central Binding Crease (Desktop Only) */}
@@ -519,16 +531,16 @@ export default function BookReader({ pages, bookTitle, collection }: BookReaderP
               </motion.div>
             </AnimatePresence>
 
-            {/* Premium Ribbon Bookmark */}
+            {/* Premium Ribbon Bookmark (Hanging from top) */}
             <div style={{
               position: 'absolute',
-              bottom: '-12px',
+              top: '-4px', // Hangs slightly over the top paper
               right: isMobile ? '20px' : '10%',
               width: '32px',
-              height: '80px',
+              height: '140px',
               background: 'linear-gradient(to right, #8a291f 0%, #a33327 20%, #bf4030 50%, #a33327 80%, #8a291f 100%)',
-              clipPath: 'polygon(0 0, 100% 0, 100% 100%, 50% 85%, 0 100%)',
-              filter: 'drop-shadow(0 8px 10px rgba(0,0,0,0.6))',
+              clipPath: 'polygon(0 0, 100% 0, 100% 100%, 50% calc(100% - 15px), 0 100%)',
+              filter: 'drop-shadow(0 6px 8px rgba(0,0,0,0.4))',
               zIndex: 15,
             }}>
               <div style={{ position: 'absolute', inset: '0 4px', borderLeft: '1px dashed rgba(255,255,255,0.2)', borderRight: '1px dashed rgba(255,255,255,0.2)' }} />
