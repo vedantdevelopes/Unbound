@@ -1,8 +1,7 @@
 import type { Metadata } from 'next';
 import { Inter, Playfair_Display, Instrument_Serif, Outfit, Geist_Mono, Dancing_Script } from 'next/font/google';
-import { Analytics } from '@vercel/analytics/react';
 import './globals.css';
-
+import { Analytics } from '@vercel/analytics/react';
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 const playfair = Playfair_Display({ subsets: ['latin'], variable: '--font-playfair' });
 const instrument = Instrument_Serif({ weight: '400', style: 'italic', subsets: ['latin'], variable: '--font-instrument' });
