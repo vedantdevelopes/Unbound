@@ -171,8 +171,8 @@ export default function BookReader({ pages, bookTitle, collection }: BookReaderP
       setTimeout(() => {
         setDirection(1);
         setCurrentIndex(prev => Math.min(prev + 1, maxIndex));
-      }, 350); // Swap content exactly when page is standing up at 90 degrees
-      setTimeout(() => setFlipping(null), 700);
+      }, 450); // Swap content exactly when page is standing up at 90 degrees
+      setTimeout(() => setFlipping(null), 900);
     }
   };
 
@@ -182,8 +182,8 @@ export default function BookReader({ pages, bookTitle, collection }: BookReaderP
       setTimeout(() => {
         setDirection(-1);
         setCurrentIndex(prev => Math.min(prev - 1, maxIndex));
-      }, 350);
-      setTimeout(() => setFlipping(null), 700);
+      }, 450);
+      setTimeout(() => setFlipping(null), 900);
     }
   };
 
@@ -489,54 +489,84 @@ export default function BookReader({ pages, bookTitle, collection }: BookReaderP
             {!isMobile && flipping === 'next' && (
               <>
                 <motion.div
-                  initial={{ rotateY: 0 }}
-                  animate={{ rotateY: -180 }}
-                  transition={{ duration: 0.7, ease: "easeInOut" }}
+                  initial={{ rotateY: 0, rotateZ: 0, scale: 1, boxShadow: '-5px 0 10px rgba(0,0,0,0.05)' }}
+                  animate={{ 
+                    rotateY: -180, 
+                    rotateZ: [0, -2, -3, -2, 0], 
+                    scale: [1, 1.03, 1.06, 1.03, 1],
+                    boxShadow: ['-5px 0 10px rgba(0,0,0,0.05)', '-15px 10px 20px rgba(0,0,0,0.1)', '-40px 20px 50px rgba(0,0,0,0.3)', '-15px 10px 20px rgba(0,0,0,0.1)', '-5px 0 10px rgba(0,0,0,0.05)']
+                  }}
+                  transition={{ duration: 0.9, ease: [0.64, 0.04, 0.35, 1], times: [0, 0.25, 0.5, 0.75, 1] }}
                   style={{
                     position: 'absolute', right: 0, top: 0, bottom: 0, width: '50%',
-                    transformOrigin: 'left center', backgroundColor: '#FDFBF9', zIndex: 40,
-                    backfaceVisibility: 'hidden', boxShadow: '-10px 0 20px rgba(0,0,0,0.1)', pointerEvents: 'none',
-                    backgroundImage: `linear-gradient(to right, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0) 20%), ${PAPER_TEXTURE_SVG}`
+                    transformOrigin: 'left center', backgroundColor: '#FDFBF9', zIndex: 60,
+                    backfaceVisibility: 'hidden', pointerEvents: 'none', borderRadius: '2px 8px 8px 2px',
+                    backgroundImage: `linear-gradient(to right, rgba(0,0,0,0.1) 0%, rgba(255,255,255,0.4) 10%, rgba(0,0,0,0.02) 25%), ${PAPER_TEXTURE_SVG}`
                   }}
-                />
+                >
+                  <motion.div animate={{ opacity: [0, 0.7, 0] }} transition={{ duration: 0.9, ease: "easeInOut" }} style={{ position: 'absolute', inset: 0, background: 'linear-gradient(135deg, transparent 20%, rgba(255,255,255,0.8) 50%, transparent 80%)' }} />
+                </motion.div>
+
                 <motion.div
-                  initial={{ rotateY: 180 }}
-                  animate={{ rotateY: 0 }}
-                  transition={{ duration: 0.7, ease: "easeInOut" }}
+                  initial={{ rotateY: 180, rotateZ: 0, scale: 1, boxShadow: '5px 0 10px rgba(0,0,0,0.05)' }}
+                  animate={{ 
+                    rotateY: 0, 
+                    rotateZ: [0, -2, -3, -2, 0], 
+                    scale: [1, 1.03, 1.06, 1.03, 1],
+                    boxShadow: ['5px 0 10px rgba(0,0,0,0.05)', '15px 10px 20px rgba(0,0,0,0.1)', '40px 20px 50px rgba(0,0,0,0.3)', '15px 10px 20px rgba(0,0,0,0.1)', '5px 0 10px rgba(0,0,0,0.05)']
+                  }}
+                  transition={{ duration: 0.9, ease: [0.64, 0.04, 0.35, 1], times: [0, 0.25, 0.5, 0.75, 1] }}
                   style={{
                     position: 'absolute', left: 0, top: 0, bottom: 0, width: '50%',
-                    transformOrigin: 'right center', backgroundColor: '#FDFBF9', zIndex: 40,
-                    backfaceVisibility: 'hidden', boxShadow: '10px 0 20px rgba(0,0,0,0.15)', pointerEvents: 'none',
-                    backgroundImage: `linear-gradient(to left, rgba(0,0,0,0.08) 0%, rgba(0,0,0,0) 25%), ${PAPER_TEXTURE_SVG}`
+                    transformOrigin: 'right center', backgroundColor: '#FDFBF9', zIndex: 55,
+                    backfaceVisibility: 'hidden', pointerEvents: 'none', borderRadius: '8px 2px 2px 8px',
+                    backgroundImage: `linear-gradient(to left, rgba(0,0,0,0.1) 0%, rgba(255,255,255,0.4) 10%, rgba(0,0,0,0.02) 25%), ${PAPER_TEXTURE_SVG}`
                   }}
-                />
+                >
+                  <motion.div animate={{ opacity: [0, 0.7, 0] }} transition={{ duration: 0.9, ease: "easeInOut" }} style={{ position: 'absolute', inset: 0, background: 'linear-gradient(-135deg, transparent 20%, rgba(255,255,255,0.8) 50%, transparent 80%)' }} />
+                </motion.div>
               </>
             )}
 
             {!isMobile && flipping === 'prev' && (
               <>
                 <motion.div
-                  initial={{ rotateY: 0 }}
-                  animate={{ rotateY: 180 }}
-                  transition={{ duration: 0.7, ease: "easeInOut" }}
+                  initial={{ rotateY: 0, rotateZ: 0, scale: 1, boxShadow: '5px 0 10px rgba(0,0,0,0.05)' }}
+                  animate={{ 
+                    rotateY: 180, 
+                    rotateZ: [0, 2, 3, 2, 0], 
+                    scale: [1, 1.03, 1.06, 1.03, 1],
+                    boxShadow: ['5px 0 10px rgba(0,0,0,0.05)', '15px 10px 20px rgba(0,0,0,0.1)', '40px 20px 50px rgba(0,0,0,0.3)', '15px 10px 20px rgba(0,0,0,0.1)', '5px 0 10px rgba(0,0,0,0.05)']
+                  }}
+                  transition={{ duration: 0.9, ease: [0.64, 0.04, 0.35, 1], times: [0, 0.25, 0.5, 0.75, 1] }}
                   style={{
                     position: 'absolute', left: 0, top: 0, bottom: 0, width: '50%',
-                    transformOrigin: 'right center', backgroundColor: '#FDFBF9', zIndex: 40,
-                    backfaceVisibility: 'hidden', boxShadow: '10px 0 20px rgba(0,0,0,0.1)', pointerEvents: 'none',
-                    backgroundImage: `linear-gradient(to left, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0) 20%), ${PAPER_TEXTURE_SVG}`
+                    transformOrigin: 'right center', backgroundColor: '#FDFBF9', zIndex: 60,
+                    backfaceVisibility: 'hidden', pointerEvents: 'none', borderRadius: '8px 2px 2px 8px',
+                    backgroundImage: `linear-gradient(to left, rgba(0,0,0,0.1) 0%, rgba(255,255,255,0.4) 10%, rgba(0,0,0,0.02) 25%), ${PAPER_TEXTURE_SVG}`
                   }}
-                />
+                >
+                  <motion.div animate={{ opacity: [0, 0.7, 0] }} transition={{ duration: 0.9, ease: "easeInOut" }} style={{ position: 'absolute', inset: 0, background: 'linear-gradient(-135deg, transparent 20%, rgba(255,255,255,0.8) 50%, transparent 80%)' }} />
+                </motion.div>
+
                 <motion.div
-                  initial={{ rotateY: -180 }}
-                  animate={{ rotateY: 0 }}
-                  transition={{ duration: 0.7, ease: "easeInOut" }}
+                  initial={{ rotateY: -180, rotateZ: 0, scale: 1, boxShadow: '-5px 0 10px rgba(0,0,0,0.05)' }}
+                  animate={{ 
+                    rotateY: 0, 
+                    rotateZ: [0, 2, 3, 2, 0], 
+                    scale: [1, 1.03, 1.06, 1.03, 1],
+                    boxShadow: ['-5px 0 10px rgba(0,0,0,0.05)', '-15px 10px 20px rgba(0,0,0,0.1)', '-40px 20px 50px rgba(0,0,0,0.3)', '-15px 10px 20px rgba(0,0,0,0.1)', '-5px 0 10px rgba(0,0,0,0.05)']
+                  }}
+                  transition={{ duration: 0.9, ease: [0.64, 0.04, 0.35, 1], times: [0, 0.25, 0.5, 0.75, 1] }}
                   style={{
                     position: 'absolute', right: 0, top: 0, bottom: 0, width: '50%',
-                    transformOrigin: 'left center', backgroundColor: '#FDFBF9', zIndex: 40,
-                    backfaceVisibility: 'hidden', boxShadow: '-10px 0 20px rgba(0,0,0,0.15)', pointerEvents: 'none',
-                    backgroundImage: `linear-gradient(to right, rgba(0,0,0,0.08) 0%, rgba(0,0,0,0) 25%), ${PAPER_TEXTURE_SVG}`
+                    transformOrigin: 'left center', backgroundColor: '#FDFBF9', zIndex: 55,
+                    backfaceVisibility: 'hidden', pointerEvents: 'none', borderRadius: '2px 8px 8px 2px',
+                    backgroundImage: `linear-gradient(to right, rgba(0,0,0,0.1) 0%, rgba(255,255,255,0.4) 10%, rgba(0,0,0,0.02) 25%), ${PAPER_TEXTURE_SVG}`
                   }}
-                />
+                >
+                  <motion.div animate={{ opacity: [0, 0.7, 0] }} transition={{ duration: 0.9, ease: "easeInOut" }} style={{ position: 'absolute', inset: 0, background: 'linear-gradient(135deg, transparent 20%, rgba(255,255,255,0.8) 50%, transparent 80%)' }} />
+                </motion.div>
               </>
             )}
 
