@@ -61,8 +61,8 @@ const PageContainer = ({
     <div
       style={{
         flex: 1,
-        backgroundColor: '#f6f4f0',
-        padding: isMobile ? '2rem 1.5rem' : '3rem 3.5rem',
+        backgroundColor: '#FCFAF8',
+        padding: isMobile ? '2rem 1.5rem' : '3rem 4rem',
         display: 'flex',
         flexDirection: 'column',
         position: 'relative',
@@ -430,11 +430,13 @@ export default function BookReader({ pages, bookTitle, collection }: BookReaderP
         <div style={{
           display: 'flex',
           width: '100%',
-          maxWidth: isMobile ? '480px' : '960px',
-          height: isMobile ? '70vh' : '80vh',
-          backgroundColor: '#f6f4f0',
-          borderRadius: isMobile ? '4px 12px 12px 4px' : '8px',
-          boxShadow: '0 25px 50px rgba(0,0,0,0.3), inset 0 0 0 1px rgba(0,0,0,0.05)',
+          maxWidth: isMobile ? '480px' : '1000px',
+          height: isMobile ? '75vh' : '82vh',
+          backgroundColor: '#FDFBF9',
+          borderRadius: isMobile ? '4px 12px 12px 4px' : '2px 8px 8px 2px',
+          boxShadow: isMobile 
+            ? '0 25px 50px rgba(0,0,0,0.3), inset -2px 0 5px rgba(0,0,0,0.02)'
+            : '0 25px 50px rgba(0,0,0,0.4), 3px 3px 0px #e8e5df, 3px 3px 0px 1px rgba(0,0,0,0.05), 6px 6px 0px #dfdbd2, 6px 6px 0px 1px rgba(0,0,0,0.05), inset 0 0 20px rgba(0,0,0,0.02)',
           position: 'relative',
           overflow: 'hidden',
           cursor: 'default',
@@ -447,11 +449,12 @@ export default function BookReader({ pages, bookTitle, collection }: BookReaderP
               left: '50%',
               top: 0,
               bottom: 0,
-              width: '50px',
+              width: '80px',
               transform: 'translateX(-50%)',
-              background: 'linear-gradient(to right, transparent, rgba(0,0,0,0.04) 40%, rgba(0,0,0,0.08) 50%, rgba(0,0,0,0.04) 60%, transparent)',
+              background: 'linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(0,0,0,0.02) 40%, rgba(0,0,0,0.06) 48%, rgba(0,0,0,0.12) 50%, rgba(0,0,0,0.06) 52%, rgba(0,0,0,0.02) 60%, rgba(255,255,255,0) 100%)',
               zIndex: 10,
-              pointerEvents: 'none'
+              pointerEvents: 'none',
+              boxShadow: 'inset 0 0 15px rgba(0,0,0,0.03)'
             }} />
           )}
 
@@ -502,15 +505,18 @@ export default function BookReader({ pages, bookTitle, collection }: BookReaderP
           {/* Ribbon Bookmark */}
           <div style={{
             position: 'absolute',
-            bottom: 0,
-            right: isMobile ? '30px' : '15%',
-            width: '24px',
-            height: '40px',
-            backgroundColor: '#a33327',
-            clipPath: 'polygon(0 0, 100% 0, 100% 100%, 50% 80%, 0 100%)',
-            boxShadow: '0 4px 8px rgba(0,0,0,0.3)',
+            bottom: -5,
+            right: isMobile ? '30px' : '12%',
+            width: '32px',
+            height: '60px',
+            background: 'linear-gradient(to right, #8a291f 0%, #a33327 20%, #b83c2e 50%, #a33327 80%, #8a291f 100%)',
+            clipPath: 'polygon(0 0, 100% 0, 100% 100%, 50% 82%, 0 100%)',
+            filter: 'drop-shadow(0 4px 6px rgba(0,0,0,0.4))',
             zIndex: 15,
-          }} />
+          }}>
+            {/* Thread detailing */}
+            <div style={{ position: 'absolute', inset: '0 4px', borderLeft: '1px dashed rgba(255,255,255,0.2)', borderRight: '1px dashed rgba(255,255,255,0.2)' }} />
+          </div>
         </div>
 
         {/* External Navigation Controls */}
