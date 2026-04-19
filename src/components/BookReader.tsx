@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useMemo, useEffect, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useMotionValue, useTransform, useSpring } from 'framer-motion';
 
 // ─── Utilities ────────────────────────────────────────────────────────────────
 
@@ -162,6 +162,30 @@ export default function BookReader({ pages, bookTitle, collection }: BookReaderP
   const [direction, setDirection] = useState(1);
   const [flipping, setFlipping] = useState<'next' | 'prev' | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  // Magnetic 3D Physics
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
+  const springConfig = { damping: 25, stiffness: 120, mass: 0.5 };
+  const springX = useSpring(mouseX, springConfig);
+  const springY = useSpring(mouseY, springConfig);
+  
+  const rotateX = useTransform(springY, [-400, 400], [4, -4]);
+  const rotateY = useTransform(springX, [-400, 400], [-4, 4]);
+
+  const handleMouseMove = (event: React.MouseEvent<HTMLDivElement>) => {
+    if (isMobile) return;
+    const rect = event.currentTarget.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+    mouseX.set(event.clientX - centerX);
+    mouseY.set(event.clientY - centerY);
+  };
+
+  const handleMouseLeave = () => {
+    mouseX.set(0);
+    mouseY.set(0);
+  };
 
   const maxIndex = Math.max(0, flipPages.length - 1);
 
@@ -428,10 +452,13 @@ export default function BookReader({ pages, bookTitle, collection }: BookReaderP
         .tiptap-body strong { color: #2a2626; }
       ` }} />
 
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', padding: isMobile ? '1rem' : '2rem' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', padding: isMobile ? '1rem' : '2rem', perspective: '3000px' }}>
         
-        {/* Book Hardcover Casing */}
-        <div style={{
+        {/* Book Hardcover Casing - Now responds to magnetic mouse movement */}
+        <motion.div 
+          onMouseMove={handleMouseMove}
+          onMouseLeave={handleMouseLeave}
+          style={{
           display: 'flex',
           width: '100%',
           maxWidth: isMobile ? '480px' : '1080px',
@@ -439,8 +466,10 @@ export default function BookReader({ pages, bookTitle, collection }: BookReaderP
           backgroundColor: '#38322e', // Hardcover wrap color
           borderRadius: isMobile ? '6px 12px 12px 6px' : '8px',
           padding: isMobile ? '4px 10px 4px 4px' : '12px 16px',
-          boxShadow: '0 25px 60px rgba(0,0,0,0.5), inset 0 2px 4px rgba(255,255,255,0.1), inset 0 -2px 4px rgba(0,0,0,0.4)',
+          boxShadow: '0 30px 80px rgba(0,0,0,0.6), inset 0 2px 4px rgba(255,255,255,0.1), inset 0 -2px 4px rgba(0,0,0,0.4)',
           position: 'relative',
+          rotateX: isMobile ? 0 : rotateX,
+          rotateY: isMobile ? 0 : rotateY,
         }}>
           
           {/* Cover Texture */}
@@ -614,7 +643,7 @@ export default function BookReader({ pages, bookTitle, collection }: BookReaderP
             <div style={{
               position: 'absolute',
               top: '-4px', // Hangs slightly over the top paper
-              right: isMobile ? '20px' : '10%',
+              right: isMobile ? '20px' : '30px', // Shifted to right margin to avoid text overlap
               width: '32px',
               height: '140px',
               background: 'linear-gradient(to right, #8a291f 0%, #a33327 20%, #bf4030 50%, #a33327 80%, #8a291f 100%)',
@@ -626,7 +655,7 @@ export default function BookReader({ pages, bookTitle, collection }: BookReaderP
             </div>
 
           </div>
-        </div>
+        </motion.div>
 
         {/* External Navigation Controls */}
         <div style={{ 
