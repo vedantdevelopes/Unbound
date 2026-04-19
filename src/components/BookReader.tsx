@@ -157,24 +157,32 @@ export default function BookReader({ pages, bookTitle, collection }: BookReaderP
     return { flipPages: flip };
   }, [pages]);
 
-  // State
   const [currentIndex, setCurrentIndex] = useState(0);
   const [direction, setDirection] = useState(1);
+  const [flipping, setFlipping] = useState<'next' | 'prev' | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const maxIndex = Math.max(0, flipPages.length - 1);
 
   const goNext = () => {
-    if (currentIndex < maxIndex) {
-      setDirection(1);
-      setCurrentIndex(prev => Math.min(prev + 1, maxIndex));
+    if (currentIndex < maxIndex && !flipping) {
+      setFlipping('next');
+      setTimeout(() => {
+        setDirection(1);
+        setCurrentIndex(prev => Math.min(prev + 1, maxIndex));
+      }, 350); // Swap content exactly when page is standing up at 90 degrees
+      setTimeout(() => setFlipping(null), 700);
     }
   };
 
   const goPrev = () => {
-    if (currentIndex > 0) {
-      setDirection(-1);
-      setCurrentIndex(prev => Math.max(prev - 1, 0));
+    if (currentIndex > 0 && !flipping) {
+      setFlipping('prev');
+      setTimeout(() => {
+        setDirection(-1);
+        setCurrentIndex(prev => Math.min(prev - 1, maxIndex));
+      }, 350);
+      setTimeout(() => setFlipping(null), 700);
     }
   };
 
@@ -369,10 +377,6 @@ export default function BookReader({ pages, bookTitle, collection }: BookReaderP
     </div>
   );
 
-  const fadeVariants = {
-    enter: { opacity: 0 },
-    center: { opacity: 1 },
-    exit: { opacity: 0 },
   };
 
   return (
@@ -446,7 +450,6 @@ export default function BookReader({ pages, bookTitle, collection }: BookReaderP
             backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.5' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100' height='100' filter='url(%23n)'/%3E%3C/svg%3E")`,
           }} />
 
-          {/* Book Paper Stack (The actual white pages) */}
           <div style={{
             display: 'flex',
             width: '100%',
@@ -454,7 +457,8 @@ export default function BookReader({ pages, bookTitle, collection }: BookReaderP
             position: 'relative',
             backgroundColor: '#FDFBF9',
             borderRadius: isMobile ? '2px 8px 8px 2px' : '4px',
-            boxShadow: '0 0 10px rgba(0,0,0,0.8), 2px 2px 0px #FDFBF9, 3px 3px 0px #E5E0D5, 4px 4px 0px #FDFBF9, 5px 5px 0px #E5E0D5, 6px 6px 15px rgba(0,0,0,0.4), inset 0 0 20px rgba(0,0,0,0.03)'
+            boxShadow: '0 0 10px rgba(0,0,0,0.8), 2px 2px 0px #FDFBF9, 3px 3px 0px #E5E0D5, 4px 4px 0px #FDFBF9, 5px 5px 0px #E5E0D5, 6px 6px 15px rgba(0,0,0,0.4), inset 0 0 20px rgba(0,0,0,0.03)',
+            perspective: '2500px', // Crucial for 3D page flip effect
           }}>
 
             {/* Central Binding Crease (Desktop Only) */}
@@ -475,27 +479,75 @@ export default function BookReader({ pages, bookTitle, collection }: BookReaderP
             {/* Touch navigation zones */}
             <div 
               onClick={goPrev}
-              style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: '15%', zIndex: 20, cursor: currentIndex > 0 ? 'w-resize' : 'default' }}
+              style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: '15%', zIndex: 60, cursor: currentIndex > 0 ? 'w-resize' : 'default' }}
             />
             <div 
               onClick={goNext}
-              style={{ position: 'absolute', right: 0, top: 0, bottom: 0, width: '15%', zIndex: 20, cursor: currentIndex < maxIndex ? 'e-resize' : 'default' }}
+              style={{ position: 'absolute', right: 0, top: 0, bottom: 0, width: '15%', zIndex: 60, cursor: currentIndex < maxIndex ? 'e-resize' : 'default' }}
             />
 
-            <AnimatePresence initial={false} mode="wait">
-              <motion.div
-                key={currentIndex}
-                variants={fadeVariants}
-                initial="enter"
-                animate="center"
-                exit="exit"
-                transition={{ duration: 0.2 }}
-                style={{
-                  display: 'flex',
-                  width: '100%',
-                  height: '100%',
-                }}
-              >
+            {/* 3D Physical Page Flip Simulation - Render only when flipping */}
+            {!isMobile && flipping === 'next' && (
+              <>
+                <motion.div
+                  initial={{ rotateY: 0 }}
+                  animate={{ rotateY: -180 }}
+                  transition={{ duration: 0.7, ease: "easeInOut" }}
+                  style={{
+                    position: 'absolute', right: 0, top: 0, bottom: 0, width: '50%',
+                    transformOrigin: 'left center', backgroundColor: '#FDFBF9', zIndex: 40,
+                    backfaceVisibility: 'hidden', boxShadow: '-10px 0 20px rgba(0,0,0,0.1)', pointerEvents: 'none',
+                    backgroundImage: 'linear-gradient(to right, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0) 20%), url("data:image/svg+xml,%3Csvg viewBox=\\'0 0 200 200\\' xmlns=\\'http://www.w3.org/2000/svg\\'%3E%3Cfilter id=\\'n\\'%3E%3CfeTurbulence type=\\'fractalNoise\\' baseFrequency=\\'0.9\\' numOctaves=\\'3\\' stitchTiles=\\'stitch\\'/%3E%3C/filter%3E%3Crect width=\\'100%25\\' height=\\'100%25\\' filter=\\'url(%23n)\\' opacity=\\'0.15\\'/%3E%3C/svg%3E")'
+                  }}
+                />
+                <motion.div
+                  initial={{ rotateY: 180 }}
+                  animate={{ rotateY: 0 }}
+                  transition={{ duration: 0.7, ease: "easeInOut" }}
+                  style={{
+                    position: 'absolute', left: 0, top: 0, bottom: 0, width: '50%',
+                    transformOrigin: 'right center', backgroundColor: '#FDFBF9', zIndex: 40,
+                    backfaceVisibility: 'hidden', boxShadow: '10px 0 20px rgba(0,0,0,0.15)', pointerEvents: 'none',
+                    backgroundImage: 'linear-gradient(to left, rgba(0,0,0,0.08) 0%, rgba(0,0,0,0) 25%), url("data:image/svg+xml,%3Csvg viewBox=\\'0 0 200 200\\' xmlns=\\'http://www.w3.org/2000/svg\\'%3E%3Cfilter id=\\'n\\'%3E%3CfeTurbulence type=\\'fractalNoise\\' baseFrequency=\\'0.9\\' numOctaves=\\'3\\' stitchTiles=\\'stitch\\'/%3E%3C/filter%3E%3Crect width=\\'100%25\\' height=\\'100%25\\' filter=\\'url(%23n)\\' opacity=\\'0.15\\'/%3E%3C/svg%3E")'
+                  }}
+                />
+              </>
+            )}
+
+            {!isMobile && flipping === 'prev' && (
+              <>
+                <motion.div
+                  initial={{ rotateY: 0 }}
+                  animate={{ rotateY: 180 }}
+                  transition={{ duration: 0.7, ease: "easeInOut" }}
+                  style={{
+                    position: 'absolute', left: 0, top: 0, bottom: 0, width: '50%',
+                    transformOrigin: 'right center', backgroundColor: '#FDFBF9', zIndex: 40,
+                    backfaceVisibility: 'hidden', boxShadow: '10px 0 20px rgba(0,0,0,0.1)', pointerEvents: 'none',
+                    backgroundImage: 'linear-gradient(to left, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0) 20%), url("data:image/svg+xml,%3Csvg viewBox=\\'0 0 200 200\\' xmlns=\\'http://www.w3.org/2000/svg\\'%3E%3Cfilter id=\\'n\\'%3E%3CfeTurbulence type=\\'fractalNoise\\' baseFrequency=\\'0.9\\' numOctaves=\\'3\\' stitchTiles=\\'stitch\\'/%3E%3C/filter%3E%3Crect width=\\'100%25\\' height=\\'100%25\\' filter=\\'url(%23n)\\' opacity=\\'0.15\\'/%3E%3C/svg%3E")'
+                  }}
+                />
+                <motion.div
+                  initial={{ rotateY: -180 }}
+                  animate={{ rotateY: 0 }}
+                  transition={{ duration: 0.7, ease: "easeInOut" }}
+                  style={{
+                    position: 'absolute', right: 0, top: 0, bottom: 0, width: '50%',
+                    transformOrigin: 'left center', backgroundColor: '#FDFBF9', zIndex: 40,
+                    backfaceVisibility: 'hidden', boxShadow: '-10px 0 20px rgba(0,0,0,0.15)', pointerEvents: 'none',
+                    backgroundImage: 'linear-gradient(to right, rgba(0,0,0,0.08) 0%, rgba(0,0,0,0) 25%), url("data:image/svg+xml,%3Csvg viewBox=\\'0 0 200 200\\' xmlns=\\'http://www.w3.org/2000/svg\\'%3E%3Cfilter id=\\'n\\'%3E%3CfeTurbulence type=\\'fractalNoise\\' baseFrequency=\\'0.9\\' numOctaves=\\'3\\' stitchTiles=\\'stitch\\'/%3E%3C/filter%3E%3Crect width=\\'100%25\\' height=\\'100%25\\' filter=\\'url(%23n)\\' opacity=\\'0.15\\'/%3E%3C/svg%3E")'
+                  }}
+                />
+              </>
+            )}
+
+            <div
+              style={{
+                display: 'flex',
+                width: '100%',
+                height: '100%',
+              }}
+            >
                 {isMobile ? (
                   // Mobile: Single View
                   <PageContainer isMobile={true}>
@@ -527,8 +579,7 @@ export default function BookReader({ pages, bookTitle, collection }: BookReaderP
                     </>
                   )
                 )}
-              </motion.div>
-            </AnimatePresence>
+            </div>
 
             {/* Premium Ribbon Bookmark (Hanging from top) */}
             <div style={{
