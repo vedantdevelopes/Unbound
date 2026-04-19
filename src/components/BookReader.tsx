@@ -16,6 +16,8 @@ function toRoman(n: number): string {
   return r;
 }
 
+const PAPER_TEXTURE_SVG = `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.15'/%3E%3C/svg%3E")`;
+
 // ─── Shared Components ────────────────────────────────────────────────────────
 
 const PageContainer = ({
@@ -57,9 +59,8 @@ const PageContainer = ({
           left: 0,
           right: 0,
           bottom: 0,
-          opacity: 0.15,
           pointerEvents: 'none',
-          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`,
+          backgroundImage: PAPER_TEXTURE_SVG,
         }}
       />
       {/* 3D Page Curve Shading */}
@@ -377,8 +378,6 @@ export default function BookReader({ pages, bookTitle, collection }: BookReaderP
     </div>
   );
 
-  };
-
   return (
     <>
       <style dangerouslySetInnerHTML={{ __html: `
@@ -497,7 +496,7 @@ export default function BookReader({ pages, bookTitle, collection }: BookReaderP
                     position: 'absolute', right: 0, top: 0, bottom: 0, width: '50%',
                     transformOrigin: 'left center', backgroundColor: '#FDFBF9', zIndex: 40,
                     backfaceVisibility: 'hidden', boxShadow: '-10px 0 20px rgba(0,0,0,0.1)', pointerEvents: 'none',
-                    backgroundImage: 'linear-gradient(to right, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0) 20%), url("data:image/svg+xml,%3Csvg viewBox=\\'0 0 200 200\\' xmlns=\\'http://www.w3.org/2000/svg\\'%3E%3Cfilter id=\\'n\\'%3E%3CfeTurbulence type=\\'fractalNoise\\' baseFrequency=\\'0.9\\' numOctaves=\\'3\\' stitchTiles=\\'stitch\\'/%3E%3C/filter%3E%3Crect width=\\'100%25\\' height=\\'100%25\\' filter=\\'url(%23n)\\' opacity=\\'0.15\\'/%3E%3C/svg%3E")'
+                    backgroundImage: `linear-gradient(to right, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0) 20%), ${PAPER_TEXTURE_SVG}`
                   }}
                 />
                 <motion.div
@@ -508,7 +507,7 @@ export default function BookReader({ pages, bookTitle, collection }: BookReaderP
                     position: 'absolute', left: 0, top: 0, bottom: 0, width: '50%',
                     transformOrigin: 'right center', backgroundColor: '#FDFBF9', zIndex: 40,
                     backfaceVisibility: 'hidden', boxShadow: '10px 0 20px rgba(0,0,0,0.15)', pointerEvents: 'none',
-                    backgroundImage: 'linear-gradient(to left, rgba(0,0,0,0.08) 0%, rgba(0,0,0,0) 25%), url("data:image/svg+xml,%3Csvg viewBox=\\'0 0 200 200\\' xmlns=\\'http://www.w3.org/2000/svg\\'%3E%3Cfilter id=\\'n\\'%3E%3CfeTurbulence type=\\'fractalNoise\\' baseFrequency=\\'0.9\\' numOctaves=\\'3\\' stitchTiles=\\'stitch\\'/%3E%3C/filter%3E%3Crect width=\\'100%25\\' height=\\'100%25\\' filter=\\'url(%23n)\\' opacity=\\'0.15\\'/%3E%3C/svg%3E")'
+                    backgroundImage: `linear-gradient(to left, rgba(0,0,0,0.08) 0%, rgba(0,0,0,0) 25%), ${PAPER_TEXTURE_SVG}`
                   }}
                 />
               </>
@@ -524,7 +523,7 @@ export default function BookReader({ pages, bookTitle, collection }: BookReaderP
                     position: 'absolute', left: 0, top: 0, bottom: 0, width: '50%',
                     transformOrigin: 'right center', backgroundColor: '#FDFBF9', zIndex: 40,
                     backfaceVisibility: 'hidden', boxShadow: '10px 0 20px rgba(0,0,0,0.1)', pointerEvents: 'none',
-                    backgroundImage: 'linear-gradient(to left, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0) 20%), url("data:image/svg+xml,%3Csvg viewBox=\\'0 0 200 200\\' xmlns=\\'http://www.w3.org/2000/svg\\'%3E%3Cfilter id=\\'n\\'%3E%3CfeTurbulence type=\\'fractalNoise\\' baseFrequency=\\'0.9\\' numOctaves=\\'3\\' stitchTiles=\\'stitch\\'/%3E%3C/filter%3E%3Crect width=\\'100%25\\' height=\\'100%25\\' filter=\\'url(%23n)\\' opacity=\\'0.15\\'/%3E%3C/svg%3E")'
+                    backgroundImage: `linear-gradient(to left, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0) 20%), ${PAPER_TEXTURE_SVG}`
                   }}
                 />
                 <motion.div
@@ -535,7 +534,7 @@ export default function BookReader({ pages, bookTitle, collection }: BookReaderP
                     position: 'absolute', right: 0, top: 0, bottom: 0, width: '50%',
                     transformOrigin: 'left center', backgroundColor: '#FDFBF9', zIndex: 40,
                     backfaceVisibility: 'hidden', boxShadow: '-10px 0 20px rgba(0,0,0,0.15)', pointerEvents: 'none',
-                    backgroundImage: 'linear-gradient(to right, rgba(0,0,0,0.08) 0%, rgba(0,0,0,0) 25%), url("data:image/svg+xml,%3Csvg viewBox=\\'0 0 200 200\\' xmlns=\\'http://www.w3.org/2000/svg\\'%3E%3Cfilter id=\\'n\\'%3E%3CfeTurbulence type=\\'fractalNoise\\' baseFrequency=\\'0.9\\' numOctaves=\\'3\\' stitchTiles=\\'stitch\\'/%3E%3C/filter%3E%3Crect width=\\'100%25\\' height=\\'100%25\\' filter=\\'url(%23n)\\' opacity=\\'0.15\\'/%3E%3C/svg%3E")'
+                    backgroundImage: `linear-gradient(to right, rgba(0,0,0,0.08) 0%, rgba(0,0,0,0) 25%), ${PAPER_TEXTURE_SVG}`
                   }}
                 />
               </>
