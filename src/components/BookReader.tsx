@@ -5,36 +5,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 // ─── Utilities ────────────────────────────────────────────────────────────────
 
-/** Split HTML into page-sized chunks based on approximate character count. */
-function paginateHtml(html: string, charsPerPage = 800): string[] {
-  if (!html) return [''];
-  const blocks: string[] = [];
-  const blockRegex = /<(p|h3|h2|blockquote|ul|ol)[^>]*>[\s\S]*?<\/\1>|<hr[^>]*\/?>/gi;
-  let match: RegExpExecArray | null;
-  while ((match = blockRegex.exec(html)) !== null) {
-    if (match[0]) blocks.push(match[0]);
-  }
-  if (blocks.length === 0) return [html];
-
-  const pages: string[] = [];
-  let current = '';
-  let currentChars = 0;
-
-  for (const block of blocks) {
-    const textLen = block.replace(/<[^>]*>/g, '').length;
-    if (currentChars + textLen > charsPerPage && current !== '') {
-      pages.push(current);
-      current = block;
-      currentChars = textLen;
-    } else {
-      current += block;
-      currentChars += textLen;
-    }
-  }
-  if (current) pages.push(current);
-  return pages.length > 0 ? pages : [html];
-}
-
 /** Convert integer to Roman numeral. */
 function toRoman(n: number): string {
   const vals = [10, 9, 5, 4, 1];
@@ -50,11 +20,9 @@ function toRoman(n: number): string {
 
 const PageContainer = ({
   children,
-  isLeft,
   isMobile,
 }: {
   children: React.ReactNode;
-  isLeft: boolean;
   isMobile: boolean;
 }) => {
   return (
@@ -62,7 +30,7 @@ const PageContainer = ({
       style={{
         flex: 1,
         backgroundColor: '#FCFAF8',
-        padding: isMobile ? '2rem 1.5rem' : '3rem 4rem',
+        padding: isMobile ? '2.5rem 2rem' : '4rem 4rem',
         display: 'flex',
         flexDirection: 'column',
         position: 'relative',
@@ -83,7 +51,7 @@ const PageContainer = ({
           backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`,
         }}
       />
-      {/* Inner scrollable area for content (prevents absolute overflow on small screens) */}
+      {/* Inner scrollable area for content */}
       <div style={{ flex: 1, zIndex: 1, display: 'flex', flexDirection: 'column', overflowY: 'auto', overflowX: 'hidden' }} className="hide-scroll">
         {children}
       </div>
@@ -94,12 +62,11 @@ const PageContainer = ({
 // ─── Flip Pages Definitions ───────────────────────────────────────────────────
 
 interface FlipPageDef {
-  type: 'dedication' | 'toc' | 'chapter-title' | 'content' | 'end';
+  type: 'dedication' | 'toc' | 'chapter' | 'end';
   pageNum: number;
   chapterNum?: number;
   chapterTitle?: string;
   html?: string;
-  isFirstContent?: boolean;
   mediaUrls?: string[];
   chapters?: { title: string; pageNum: number }[];
 }
@@ -120,7 +87,7 @@ export default function BookReader({ pages, bookTitle, collection }: BookReaderP
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // Prepare pages
+  // Prepare pages (no chunking, just a single scrollable page per entry)
   const { flipPages } = useMemo(() => {
     const flip: FlipPageDef[] = [];
     let visual = 0;
@@ -137,55 +104,44 @@ export default function BookReader({ pages, bookTitle, collection }: BookReaderP
 
     for (let ci = 0; ci < validPages.length; ci++) {
       const page = validPages[ci];
-      const chapterPageNum = ++visual;
+      const pageNum = ++visual;
       
-      flip.push({ type: 'chapter-title', pageNum: chapterPageNum, chapterNum: ci + 1, chapterTitle: page.title });
-      toc.push({ title: page.title, pageNum: chapterPageNum });
+      toc.push({ title: page.title, pageNum: pageNum });
 
-      const chunks = paginateHtml(page.content, isMobile ? 650 : 900);
-      chunks.forEach((chunk, j) => {
-        flip.push({
-          type: 'content',
-          pageNum: ++visual,
-          chapterNum: ci + 1,
-          chapterTitle: page.title,
-          html: chunk,
-          isFirstContent: j === 0,
-          mediaUrls: j === 0 ? page.media_urls : [],
-        });
+      flip.push({
+        type: 'chapter',
+        pageNum: pageNum,
+        chapterNum: ci + 1,
+        chapterTitle: page.title,
+        html: page.content,
+        mediaUrls: page.media_urls,
       });
     }
 
     flip.push({ type: 'end', pageNum: ++visual });
     flip[tocIndex].chapters = toc;
 
-    // Pad array to ensure even length for desktop spreads
-    if (flip.length % 2 !== 0) {
-      flip.push({ type: 'end', pageNum: ++visual }); // just a blank buffer effectively
-    }
-
     return { flipPages: flip };
-  }, [pages, isMobile]);
+  }, [pages]);
 
   // State
   const [currentIndex, setCurrentIndex] = useState(0);
   const [direction, setDirection] = useState(1);
 
-  // Pagination logic
-  const step = isMobile ? 1 : 2;
-  const maxIndex = Math.max(0, flipPages.length - (isMobile ? 1 : 2));
+  // Pagination logic (Single page step)
+  const maxIndex = Math.max(0, flipPages.length - 1);
 
   const goNext = () => {
     if (currentIndex < maxIndex) {
       setDirection(1);
-      setCurrentIndex(prev => Math.min(prev + step, maxIndex));
+      setCurrentIndex(prev => Math.min(prev + 1, maxIndex));
     }
   };
 
   const goPrev = () => {
     if (currentIndex > 0) {
       setDirection(-1);
-      setCurrentIndex(prev => Math.max(prev - step, 0));
+      setCurrentIndex(prev => Math.max(prev - 1, 0));
     }
   };
 
@@ -197,7 +153,7 @@ export default function BookReader({ pages, bookTitle, collection }: BookReaderP
     };
     window.addEventListener('keydown', handleKey);
     return () => window.removeEventListener('keydown', handleKey);
-  }, [currentIndex, maxIndex, step]);
+  }, [currentIndex, maxIndex]);
 
   if (pages.length === 0) {
     return (
@@ -207,10 +163,7 @@ export default function BookReader({ pages, bookTitle, collection }: BookReaderP
     );
   }
 
-  // Which pages are currently visible?
-  const visiblePages = isMobile
-    ? [flipPages[currentIndex]]
-    : [flipPages[currentIndex], flipPages[currentIndex + 1]].filter(Boolean);
+  const activePage = flipPages[currentIndex];
 
   const renderPageContent = (fp: FlipPageDef) => {
     if (!fp) return null;
@@ -219,7 +172,7 @@ export default function BookReader({ pages, bookTitle, collection }: BookReaderP
       return (
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
           <div style={{ textAlign: 'center', color: '#4a3d35' }}>
-            <div style={{ fontFamily: 'var(--font-instrument)', fontSize: 'clamp(2rem, 4vw, 3rem)', lineHeight: 1.4, opacity: 0.85, transform: 'rotate(-2deg)' }}>
+            <div style={{ fontFamily: 'var(--font-instrument)', fontSize: 'clamp(2rem, 4vw, 3.5rem)', lineHeight: 1.4, opacity: 0.85, transform: 'rotate(-2deg)' }}>
               <p>For {collection?.recipient_name ?? 'You'},</p>
               <p style={{ fontSize: '0.6em', marginTop: '1rem', opacity: 0.8 }}>with love</p>
               <p style={{ fontSize: '0.5em', opacity: 0.7 }}>from {collection?.sender_name ?? 'Me'}</p>
@@ -233,24 +186,24 @@ export default function BookReader({ pages, bookTitle, collection }: BookReaderP
     if (fp.type === 'toc') {
       return (
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-          <div style={{ fontFamily: 'var(--font-ui)', fontSize: '9px', letterSpacing: '0.15em', textTransform: 'uppercase', color: '#b0a89a', borderBottom: '1px solid rgba(0,0,0,0.08)', paddingBottom: '0.6rem', marginBottom: '2rem' }}>
+          <div style={{ fontFamily: 'var(--font-ui)', fontSize: '10px', letterSpacing: '0.15em', textTransform: 'uppercase', color: '#b0a89a', borderBottom: '1px solid rgba(0,0,0,0.08)', paddingBottom: '0.6rem', marginBottom: '2.5rem' }}>
             Contents
           </div>
-          <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
-            <div style={{ fontFamily: 'var(--font-heading)', fontSize: '2rem', color: '#2a2626' }}>Contents</div>
+          <div style={{ textAlign: 'center', marginBottom: '3rem', flexShrink: 0 }}>
+            <div style={{ fontFamily: 'var(--font-heading)', fontSize: '2.5rem', color: '#2a2626' }}>Contents</div>
             <div style={{ marginTop: '0.5rem', fontSize: '1.2rem', opacity: 0.3 }}>❧</div>
           </div>
-          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem', paddingBottom: '2rem' }}>
             {(fp.chapters || []).map((ch, i) => (
               <div key={i} style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem' }}>
-                <span style={{ fontFamily: 'var(--font-ui)', fontSize: '11px', color: '#b0a89a', minWidth: '32px', letterSpacing: '0.05em' }}>
+                <span style={{ fontFamily: 'var(--font-ui)', fontSize: '12px', color: '#b0a89a', minWidth: '36px', letterSpacing: '0.05em' }}>
                   {toRoman(i + 1)}.
                 </span>
-                <span style={{ fontFamily: 'var(--font-inter)', fontSize: '0.95rem', color: '#3a3431', flex: 1 }}>
+                <span style={{ fontFamily: 'var(--font-inter)', fontSize: '1.05rem', color: '#3a3431', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   {ch.title}
                 </span>
                 <span style={{ flex: 0, borderBottom: '1px dotted rgba(0,0,0,0.2)', flexGrow: 1, marginBottom: '5px', minWidth: '20px' }} />
-                <span style={{ fontFamily: 'var(--font-instrument)', fontSize: '1rem', color: '#b0a89a' }}>
+                <span style={{ fontFamily: 'var(--font-instrument)', fontSize: '1.1rem', color: '#b0a89a' }}>
                   {ch.pageNum}
                 </span>
               </div>
@@ -260,79 +213,70 @@ export default function BookReader({ pages, bookTitle, collection }: BookReaderP
       );
     }
 
-    if (fp.type === 'chapter-title') {
-      return (
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
-          <div style={{ textAlign: 'center', color: '#4a3d35' }}>
-            <div style={{ fontFamily: 'var(--font-ui)', fontSize: '11px', letterSpacing: '0.3em', textTransform: 'uppercase', color: '#b0a89a', marginBottom: '2rem' }}>
-              Chapter {toRoman(fp.chapterNum!)}
-            </div>
-            <div style={{ fontSize: '1.5rem', opacity: 0.25, marginBottom: '2rem' }}>✦</div>
-            <div style={{ fontFamily: 'var(--font-heading)', fontSize: 'clamp(1.8rem, 4vw, 2.8rem)', lineHeight: 1.2, color: '#2a2626', maxWidth: '320px', margin: '0 auto' }}>
-              {fp.chapterTitle}
-            </div>
-            <div style={{ margin: '2rem auto 0 auto', width: '60px', height: '1px', backgroundColor: 'rgba(0,0,0,0.2)' }} />
-          </div>
-          <div style={{ position: 'absolute', bottom: isMobile ? '1.5rem' : '2.5rem', width: '100%', left: 0, textAlign: 'center', fontFamily: 'var(--font-instrument)', fontSize: '1rem', color: '#c0b8af' }}>
-            {fp.pageNum}
-          </div>
-        </div>
-      );
-    }
-
-    if (fp.type === 'content') {
+    if (fp.type === 'chapter') {
       return (
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
           <div style={{
             display: 'flex',
-            justifyContent: fp.pageNum % 2 === 0 ? 'flex-start' : 'flex-end',
+            justifyContent: 'space-between',
             fontFamily: 'var(--font-ui)',
-            fontSize: '9px',
+            fontSize: '10px',
             letterSpacing: '0.15em',
             textTransform: 'uppercase',
             color: '#b0a89a',
             borderBottom: '1px solid rgba(0,0,0,0.08)',
             paddingBottom: '0.6rem',
-            marginBottom: '1.5rem',
+            marginBottom: '3.5rem',
+            flexShrink: 0,
           }}>
-            {fp.pageNum % 2 === 0 ? bookTitle : fp.chapterTitle}
+            <span>{bookTitle}</span>
+            <span>Chapter {toRoman(fp.chapterNum!)}</span>
           </div>
 
-          {fp.isFirstContent && fp.mediaUrls && fp.mediaUrls.length > 0 && (
-            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1.5rem' }}>
+          <div style={{ textAlign: 'center', color: '#4a3d35', marginBottom: '3.5rem', flexShrink: 0 }}>
+            <div style={{ fontSize: '1.5rem', opacity: 0.25, marginBottom: '1.5rem' }}>✦</div>
+            <div style={{ fontFamily: 'var(--font-heading)', fontSize: 'clamp(2rem, 5vw, 3.2rem)', lineHeight: 1.2, color: '#2a2626', maxWidth: '400px', margin: '0 auto' }}>
+              {fp.chapterTitle}
+            </div>
+            <div style={{ margin: '2.5rem auto 0 auto', width: '80px', height: '1px', backgroundColor: 'rgba(0,0,0,0.2)' }} />
+          </div>
+
+          {fp.mediaUrls && fp.mediaUrls.length > 0 && (
+            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '3.5rem', flexShrink: 0 }}>
               <div style={{
-                padding: '8px 8px 24px 8px',
+                padding: '12px 12px 36px 12px',
                 background: 'white',
-                boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+                boxShadow: '0 12px 32px rgba(0,0,0,0.12)',
                 transform: 'rotate(-2deg)',
               }}>
-                <img src={fp.mediaUrls[0]} alt="Memory" style={{ width: '180px', height: '180px', objectFit: 'cover', display: 'block' }} />
+                <img src={fp.mediaUrls[0]} alt="Memory" style={{ width: '260px', height: '260px', objectFit: 'cover', display: 'block' }} />
               </div>
             </div>
           )}
 
           <div
-            className={fp.isFirstContent ? 'drop-cap-enabled tiptap-body' : 'tiptap-body'}
+            className="drop-cap-enabled tiptap-body"
             style={{
-              flex: 1,
               fontFamily: 'var(--font-inter)',
-              fontSize: 'clamp(0.9rem, 1.5vw, 1.05rem)',
-              lineHeight: '1.8',
+              fontSize: 'clamp(1rem, 1.8vw, 1.15rem)',
+              lineHeight: '1.9',
               color: '#3a3431',
               textAlign: 'justify',
               hyphens: 'auto',
+              paddingBottom: '2rem',
             }}
             dangerouslySetInnerHTML={{ __html: fp.html ?? '' }}
           />
 
           <div style={{
-            marginTop: '2rem',
-            paddingTop: '1rem',
+            marginTop: 'auto',
+            paddingTop: '2rem',
             borderTop: '1px solid rgba(0,0,0,0.07)',
             display: 'flex',
-            justifyContent: fp.pageNum % 2 === 0 ? 'flex-start' : 'flex-end',
+            justifyContent: 'center',
+            flexShrink: 0,
           }}>
-            <span style={{ fontFamily: 'var(--font-instrument)', fontSize: '1rem', color: '#c0b8af' }}>
+            <span style={{ fontFamily: 'var(--font-instrument)', fontSize: '1.1rem', color: '#c0b8af' }}>
               {fp.pageNum}
             </span>
           </div>
@@ -341,15 +285,10 @@ export default function BookReader({ pages, bookTitle, collection }: BookReaderP
     }
 
     if (fp.type === 'end') {
-      // Don't show "-- fin --" twice on a desktop spread if it's acting as a buffer
-      if (!isMobile && visiblePages[1] === fp && visiblePages[0]?.type === 'end') {
-        return <div style={{ flex: 1 }} />; // blank filler
-      }
-
       return (
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
           <div style={{ textAlign: 'center', color: '#4a3d35' }}>
-            <div style={{ fontFamily: 'var(--font-instrument)', fontSize: '3rem', letterSpacing: '0.05em', color: '#2a2626' }}>
+            <div style={{ fontFamily: 'var(--font-instrument)', fontSize: '3.5rem', letterSpacing: '0.05em', color: '#2a2626' }}>
               — fin —
             </div>
             {collection?.sender_name && (
@@ -357,7 +296,7 @@ export default function BookReader({ pages, bookTitle, collection }: BookReaderP
                 written with love by {collection.sender_name}
               </div>
             )}
-            <div style={{ marginTop: '3rem', fontSize: '1.5rem', opacity: 0.2 }}>❧</div>
+            <div style={{ marginTop: '4rem', fontSize: '1.8rem', opacity: 0.2 }}>❧</div>
           </div>
         </div>
       );
@@ -369,16 +308,19 @@ export default function BookReader({ pages, bookTitle, collection }: BookReaderP
   // Animation variants
   const slideVariants = {
     enter: (dir: number) => ({
-      x: dir > 0 ? 50 : -50,
+      x: dir > 0 ? 40 : -40,
       opacity: 0,
+      scale: 0.98,
     }),
     center: {
       x: 0,
       opacity: 1,
+      scale: 1,
     },
     exit: (dir: number) => ({
-      x: dir > 0 ? -50 : 50,
+      x: dir > 0 ? -40 : 40,
       opacity: 0,
+      scale: 0.98,
     }),
   };
 
@@ -390,35 +332,36 @@ export default function BookReader({ pages, bookTitle, collection }: BookReaderP
         .drop-cap-enabled > p:first-child::first-letter {
           font-family: var(--font-instrument);
           float: left;
-          font-size: 4.8rem;
+          font-size: 5.5rem;
           line-height: 0.7;
-          margin-right: 0.6rem;
+          margin-right: 0.7rem;
           margin-bottom: -0.2rem;
-          color: #a33327; /* Rich subtle red for drop cap */
+          color: #a33327;
         }
-        .tiptap-body p { margin-bottom: 0.8em; }
+        .tiptap-body p { margin-bottom: 1.2em; }
         .tiptap-body p:last-child { margin-bottom: 0; }
         .tiptap-body blockquote {
-          border-left: 2px solid #a33327;
-          padding-left: 1rem;
-          margin: 1.5rem 0;
+          border-left: 3px solid #a33327;
+          padding-left: 1.5rem;
+          margin: 2.5rem 0;
           font-style: italic;
           color: #6a5f57;
           background: rgba(0,0,0,0.02);
-          padding: 1rem;
+          padding: 1.5rem;
+          border-radius: 0 6px 6px 0;
         }
         .tiptap-body h3 {
           font-family: var(--font-heading);
-          font-size: 1.3rem;
-          margin-top: 1.5rem;
-          margin-bottom: 0.5rem;
+          font-size: 1.6rem;
+          margin-top: 2.5rem;
+          margin-bottom: 1rem;
           color: #2a2626;
         }
         .tiptap-body hr {
           border: none;
           text-align: center;
           color: #b0a89a;
-          margin: 1.5rem 0;
+          margin: 2.5rem 0;
         }
         .tiptap-body hr::after { content: '✦ ✦ ✦'; font-size: 0.8rem; letter-spacing: 0.5em; }
         .tiptap-body strong { color: #2a2626; }
@@ -426,39 +369,36 @@ export default function BookReader({ pages, bookTitle, collection }: BookReaderP
 
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', padding: isMobile ? '1rem' : '2rem' }}>
         
-        {/* Book Container */}
+        {/* Book Container - Single Portrait Manuscript View */}
         <div style={{
           display: 'flex',
           width: '100%',
-          maxWidth: isMobile ? '480px' : '1000px',
+          maxWidth: '680px',
           height: isMobile ? '75vh' : '82vh',
           backgroundColor: '#FDFBF9',
-          borderRadius: isMobile ? '4px 12px 12px 4px' : '2px 8px 8px 2px',
+          borderRadius: '4px 16px 16px 4px',
           boxShadow: isMobile 
-            ? '0 25px 50px rgba(0,0,0,0.3), inset -2px 0 5px rgba(0,0,0,0.02)'
-            : '0 25px 50px rgba(0,0,0,0.4), 3px 3px 0px #e8e5df, 3px 3px 0px 1px rgba(0,0,0,0.05), 6px 6px 0px #dfdbd2, 6px 6px 0px 1px rgba(0,0,0,0.05), inset 0 0 20px rgba(0,0,0,0.02)',
+            ? '0 20px 40px rgba(0,0,0,0.3)'
+            : '0 30px 60px rgba(0,0,0,0.4), 4px 4px 0px #e8e5df, 4px 4px 0px 1px rgba(0,0,0,0.05), 8px 8px 0px #dfdbd2, 8px 8px 0px 1px rgba(0,0,0,0.05), inset 0 0 30px rgba(0,0,0,0.02)',
           position: 'relative',
           overflow: 'hidden',
           cursor: 'default',
         }}>
           
-          {/* Central Spine line (desktop only) */}
-          {!isMobile && (
-            <div style={{
-              position: 'absolute',
-              left: '50%',
-              top: 0,
-              bottom: 0,
-              width: '80px',
-              transform: 'translateX(-50%)',
-              background: 'linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(0,0,0,0.02) 40%, rgba(0,0,0,0.06) 48%, rgba(0,0,0,0.12) 50%, rgba(0,0,0,0.06) 52%, rgba(0,0,0,0.02) 60%, rgba(255,255,255,0) 100%)',
-              zIndex: 10,
-              pointerEvents: 'none',
-              boxShadow: 'inset 0 0 15px rgba(0,0,0,0.03)'
-            }} />
-          )}
+          {/* Subtle Binder Edge (leftside) */}
+          <div style={{
+            position: 'absolute',
+            left: 0,
+            top: 0,
+            bottom: 0,
+            width: '14px',
+            background: 'linear-gradient(to right, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.03) 100%)',
+            zIndex: 10,
+            pointerEvents: 'none',
+            borderRight: '1px solid rgba(0,0,0,0.04)'
+          }} />
 
-          {/* Left / Right overlays for clicking to turn pages */}
+          {/* Touch navigation zones */}
           <div 
             onClick={goPrev}
             style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: '20%', zIndex: 20, cursor: currentIndex > 0 ? 'w-resize' : 'default' }}
@@ -476,29 +416,16 @@ export default function BookReader({ pages, bookTitle, collection }: BookReaderP
               initial="enter"
               animate="center"
               exit="exit"
-              transition={{ ease: [0.25, 1, 0.5, 1], duration: 0.6 }}
+              transition={{ ease: [0.25, 1, 0.5, 1], duration: 0.55 }}
               style={{
                 display: 'flex',
                 width: '100%',
                 height: '100%',
               }}
             >
-              {isMobile ? (
-                // Mobile: Single Page
-                <PageContainer isLeft={true} isMobile={true}>
-                  {renderPageContent(visiblePages[0])}
-                </PageContainer>
-              ) : (
-                // Desktop: Two Pages
-                <>
-                  <PageContainer isLeft={true} isMobile={false}>
-                    {renderPageContent(visiblePages[0])}
-                  </PageContainer>
-                  <PageContainer isLeft={false} isMobile={false}>
-                    {renderPageContent(visiblePages[1])}
-                  </PageContainer>
-                </>
-              )}
+              <PageContainer isMobile={isMobile}>
+                {renderPageContent(activePage)}
+              </PageContainer>
             </motion.div>
           </AnimatePresence>
 
@@ -506,12 +433,12 @@ export default function BookReader({ pages, bookTitle, collection }: BookReaderP
           <div style={{
             position: 'absolute',
             bottom: -5,
-            right: isMobile ? '30px' : '12%',
-            width: '32px',
-            height: '60px',
+            right: '12%',
+            width: '36px',
+            height: '75px',
             background: 'linear-gradient(to right, #8a291f 0%, #a33327 20%, #b83c2e 50%, #a33327 80%, #8a291f 100%)',
-            clipPath: 'polygon(0 0, 100% 0, 100% 100%, 50% 82%, 0 100%)',
-            filter: 'drop-shadow(0 4px 6px rgba(0,0,0,0.4))',
+            clipPath: 'polygon(0 0, 100% 0, 100% 100%, 50% 86%, 0 100%)',
+            filter: 'drop-shadow(0 6px 8px rgba(0,0,0,0.4))',
             zIndex: 15,
           }}>
             {/* Thread detailing */}
@@ -548,7 +475,7 @@ export default function BookReader({ pages, bookTitle, collection }: BookReaderP
           </button>
           
           <span>
-            {Math.min(currentIndex + 1, Math.ceil(flipPages.length / step))} / {Math.ceil(flipPages.length / step)}
+            {currentIndex + 1} / {flipPages.length}
           </span>
           
           <button 
