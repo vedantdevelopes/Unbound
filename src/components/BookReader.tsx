@@ -4,6 +4,8 @@ import React, { useState, useEffect, useRef } from "react";
 // @ts-ignore
 import HTMLFlipBook from "react-pageflip";
 
+const FlipBook = HTMLFlipBook as any;
+
 const PAPER_TEXTURE_SVG = `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.15'/%3E%3C/svg%3E")`;
 
 // ─── Subcomponents ────────────────────────────────────────────────────────────
@@ -449,7 +451,7 @@ export default function BookReader({
             />
           </div>
 
-          <HTMLFlipBook
+          <FlipBook
             width={isMobile ? 360 : 450}
             height={isMobile ? 550 : 650}
             size="stretch"
@@ -465,7 +467,7 @@ export default function BookReader({
             style={{ margin: "0 auto" }}
           >
             {pagesArray}
-          </HTMLFlipBook>
+          </FlipBook>
         </div>
 
         {/* Global Controls - Optional, PageFlip has corner dragging by default! */}
