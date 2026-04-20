@@ -2,23 +2,30 @@
 
 import { supabase } from '@/lib/supabase';
 import { redirect } from 'next/navigation';
-import { deriveKey, encryptField } from '@/lib/crypto';
-import { randomUUID } from 'crypto';
+import { deriveKey, encryptField, decryptField } from '@/lib/crypto';
+import { randomUUID, createHash } from 'crypto';
+import { cookies } from 'next/headers';
 
 export async function createCollection(formData: FormData) {
   const recipient_name = formData.get('recipient_name') as string;
   const sender_name = formData.get('sender_name') as string;
   const description = formData.get('description') as string;
   const theme = (formData.get('theme') as string) || 'wood';
+  const unlock_at_raw = formData.get('unlock_at') as string | null;
+  const pin_raw = formData.get('access_pin') as string | null;
+  const bottle_mode = formData.get('bottle_mode') === 'true';
 
   if (!recipient_name || !sender_name) {
     throw new Error('Required fields missing');
   }
 
-  // Pre-generate UUID so we can derive the encryption key BEFORE inserting.
-  // This ensures plaintext data NEVER touches the database.
   const id = randomUUID();
   const key = deriveKey(id);
+
+  const unlock_at = unlock_at_raw ? new Date(unlock_at_raw).toISOString() : null;
+  const access_pin = pin_raw && pin_raw.length === 4
+    ? createHash('sha256').update(pin_raw).digest('hex')
+    : null;
 
   const { data, error } = await supabase
     .from('collections')
@@ -28,6 +35,9 @@ export async function createCollection(formData: FormData) {
       sender_name: encryptField(sender_name, key),
       description: encryptField(description, key),
       theme,
+      unlock_at,
+      access_pin,
+      bottle_mode,
     }])
     .select('edit_id')
     .single();
@@ -44,6 +54,8 @@ export async function createBook(editId: string, coverImageUrl: string, formData
   const title = formData.get('title') as string;
   const description = formData.get('description') as string;
   const coverFile = formData.get('cover_file') as File | null;
+  const spine_color = (formData.get('spine_color') as string) || '#2a2626';
+  const soundtrack_url = (formData.get('soundtrack_url') as string) || null;
 
   let finalCoverUrl = coverImageUrl || null;
 
@@ -89,7 +101,9 @@ export async function createBook(editId: string, coverImageUrl: string, formData
       collection_id: collection.id,
       title: encryptField(title, key),
       description: encryptField(description, key),
-      cover_image_url: finalCoverUrl, // URLs left as plaintext (needed for <img> src)
+      cover_image_url: finalCoverUrl,
+      spine_color,
+      soundtrack_url,
     }]);
 
   if (error) {
@@ -164,6 +178,82 @@ export async function addPage(editId: string, bookId: string, formData: FormData
   redirect(`/e/${editId}/book/${bookId}`);
 }
 
+// ── Recipient Reply ─────────────────────────────────────────────────────────
+export async function submitReply(viewId: string, formData: FormData) {
+  const content = (formData.get('content') as string)?.trim();
+  if (!content) throw new Error('Please write something');
+
+  const { data: collection } = await supabase
+    .from('collections')
+    .select('id, reply_content')
+    .eq('view_id', viewId)
+    .single();
+
+  if (!collection) throw new Error('Library not found');
+  if (collection.reply_content) {
+    redirect(`/v/${viewId}/reply?sent=1`);
+  }
+
+  const key = deriveKey(collection.id);
+  await supabase
+    .from('collections')
+    .update({ reply_content: encryptField(content, key), reply_created_at: new Date().toISOString() })
+    .eq('view_id', viewId);
+
+  redirect(`/v/${viewId}/reply?sent=1`);
+}
+
+// ── PIN Verification ────────────────────────────────────────────────────────
+export async function verifyPin(viewId: string, formData: FormData) {
+  const pin = (formData.get('pin') as string)?.trim();
+
+  const { data: collection } = await supabase
+    .from('collections')
+    .select('access_pin')
+    .eq('view_id', viewId)
+    .single();
+
+  if (!collection?.access_pin) redirect(`/v/${viewId}`);
+
+  const hash = createHash('sha256').update(pin).digest('hex');
+  if (hash !== collection.access_pin) {
+    redirect(`/v/${viewId}/unlock?error=1`);
+  }
+
+  const cookieStore = await cookies();
+  cookieStore.set(`unbound-pin-${viewId}`, 'verified', {
+    httpOnly: true,
+    maxAge: 60 * 60 * 24 * 7,
+    sameSite: 'strict',
+    path: '/',
+  });
+
+  redirect(`/v/${viewId}`);
+}
+
+// ── Page Reordering ─────────────────────────────────────────────────────────
+export async function reorderPages(editId: string, bookId: string, orderedIds: string[]) {
+  const { data: collection } = await supabase
+    .from('collections')
+    .select('id')
+    .eq('edit_id', editId)
+    .single();
+
+  if (!collection) throw new Error('Not found');
+
+  await Promise.all(
+    orderedIds.map((id, index) =>
+      supabase.from('pages').update({ sort_order: index + 1 }).eq('id', id).eq('book_id', bookId)
+    )
+  );
+}
+
+// ── Remove PIN ──────────────────────────────────────────────────────────────
+export async function removePinLock(editId: string) {
+  await supabase.from('collections').update({ access_pin: null }).eq('edit_id', editId);
+  redirect(`/e/${editId}`);
+}
+
 export async function updatePage(editId: string, bookId: string, pageId: string, formData: FormData) {
   const title = formData.get('title') as string;
   const content = formData.get('content') as string;
@@ -205,3 +295,6 @@ export async function updatePage(editId: string, bookId: string, pageId: string,
 
   redirect(`/e/${editId}/book/${bookId}`);
 }
+
+// keep decryptField referenced to avoid lint unused-import error
+void decryptField;

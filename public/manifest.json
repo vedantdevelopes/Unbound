@@ -1,0 +1,14 @@
+{
+  "name": "Unbound",
+  "short_name": "Unbound",
+  "description": "A cinematic digital library platform for personal storytelling.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0d0a07",
+  "theme_color": "#c8902a",
+  "orientation": "any",
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}

@@ -4,6 +4,7 @@ import { addPage } from '@/app/actions';
 import Link from 'next/link';
 import { use, useState } from 'react';
 import RichTextEditor from '@/components/RichTextEditor';
+import PageTemplates from '@/components/PageTemplates';
 
 export default function NewPageEditor({ params }: { params: Promise<{ bookId: string, id: string }> | { bookId: string, id: string } }) {
   const unwrappedParams = params instanceof Promise ? use(params) : params;
@@ -27,12 +28,14 @@ export default function NewPageEditor({ params }: { params: Promise<{ bookId: st
 
       <div className="form-container" style={{ maxWidth: '800px' }}>
         <h1 className="form-header font-heading" style={{ marginBottom: '1.5rem' }}>write a new page</h1>
-        <p style={{ textAlign: 'center', color: 'var(--text-secondary)', marginBottom: '3rem' }}>
+        <p style={{ textAlign: 'center', color: 'var(--text-secondary)', marginBottom: '2rem' }}>
           Take your time. This will instantly be added to your book.
         </p>
 
         <form action={formAction} className="flex flex-col">
-          
+
+          <PageTemplates onSelect={(tmplTitle, tmplHtml) => { setTitle(tmplTitle); setContent(tmplHtml); }} />
+
           <div className="page-card" style={{ padding: '3rem', marginBottom: '2rem' }}>
             <div>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>

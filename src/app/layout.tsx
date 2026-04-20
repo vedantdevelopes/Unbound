@@ -12,6 +12,7 @@ const dancingScript = Dancing_Script({ subsets: ['latin'], variable: '--font-cur
 export const metadata: Metadata = {
   title: 'Unbound | Stories for every moment',
   description: 'Create a private digital book and share it with one link.',
+  manifest: '/manifest.json',
 };
 
 export default function RootLayout({

@@ -2,6 +2,7 @@ import { supabase } from '@/lib/supabase';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { deriveKey, decryptField } from '@/lib/crypto';
+import SortableGrid from '@/components/SortableGrid';
 
 export default async function BookPagesDashboard({ params }: { params: Promise<{ bookId: string, id: string }> | { bookId: string, id: string } }) {
   const unwrappedParams = params instanceof Promise ? await params : params;
@@ -35,10 +36,11 @@ export default async function BookPagesDashboard({ params }: { params: Promise<{
   const bookTitle = decryptField(book.title, key);
 
   const pages = (book.pages ?? [])
-    .sort((a: { created_at: string }, b: { created_at: string }) =>
-      new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
-    )
-    .map((page: { id: string; title: string; content: string; is_published: boolean; created_at: string }) => ({
+    .sort((a: { sort_order: number, created_at: string }, b: { sort_order: number, created_at: string }) => {
+      if (a.sort_order !== null && b.sort_order !== null) return a.sort_order - b.sort_order;
+      return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+    })
+    .map((page: { id: string; title: string; content: string; is_published: boolean; created_at: string; sort_order: number }) => ({
       ...page,
       title:   decryptField(page.title, key),
       content: decryptField(page.content, key),
@@ -74,45 +76,8 @@ export default async function BookPagesDashboard({ params }: { params: Promise<{
               </Link>
             </div>
           ) : (
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '2rem', justifyContent: 'center' }}>
-              {pages.map((page: { id: string; title: string; content: string; is_published: boolean }, index: number) => (
-                <Link
-                  key={page.id}
-                  href={`/e/${editId}/book/${trueBookId}/edit/${page.id}`}
-                  style={{ textDecoration: 'none', color: 'inherit' }}
-                >
-                <div className="page-card" style={{
-                  width: '300px',
-                  height: '400px',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  opacity: page.is_published ? 1 : 0.7,
-                  border: page.is_published ? 'auto' : '1px dashed var(--border)',
-                  position: 'relative',
-                  transition: 'transform 0.2s ease, box-shadow 0.2s ease',
-                }}>
-                  <div style={{ position: 'absolute', top: '1rem', right: '1rem', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px' }}>
-                    {!page.is_published && (
-                      <div style={{ background: 'var(--accent)', color: 'white', padding: '0.2rem 0.6rem', fontSize: '10px', borderRadius: '4px', letterSpacing: '0.1em' }} className="font-ui">
-                        DRAFT
-                      </div>
-                    )}
-                  </div>
-                  <h3 className="font-heading" style={{ fontSize: '1.5rem', marginBottom: '1rem', paddingRight: '3rem' }}>
-                    {page.title}
-                  </h3>
-                  <div style={{ flex: 1, overflow: 'hidden', color: 'var(--text-secondary)', textAlign: 'left', WebkitMaskImage: 'linear-gradient(180deg, #000 60%, transparent)' }}>
-                    {page.content?.replace(/<[^>]*>/g, ' ').trim()}
-                  </div>
-                  <div style={{ marginTop: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span className="label" style={{ color: 'var(--accent)', fontSize: '10px' }}>TAP TO EDIT</span>
-                    <span className="label">Page {index + 1}</span>
-                  </div>
-                </div>
-                </Link>
-              ))}
-            </div>
+            <SortableGrid initialPages={pages} editId={editId} bookId={trueBookId} />
+
           )}
         </div>
       </div>
