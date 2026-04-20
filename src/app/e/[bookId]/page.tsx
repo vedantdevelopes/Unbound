@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 import ShareButton from '@/components/ShareButton';
 import { deriveKey, decryptField } from '@/lib/crypto';
 import LocalStorageSaver from '@/components/LocalStorageSaver';
+import CollectionSettings from '@/components/CollectionSettings';
 
 export default async function EditDashboard({ params }: { params: Promise<{ bookId: string }> | { bookId: string } }) {
   const unwrappedParams = params instanceof Promise ? await params : params;
@@ -81,6 +82,17 @@ export default async function EditDashboard({ params }: { params: Promise<{ book
               <div className="label" style={{ color: 'var(--text-secondary)' }}>{l}</div>
             </div>
           ))}
+        </div>
+
+        {/* Settings panel */}
+        <div style={{ maxWidth: '680px', margin: '0 auto 1rem', textAlign: 'left' }}>
+          <CollectionSettings
+            editId={editId}
+            currentDescription={description ?? ''}
+            currentUnlockAt={collection.unlock_at ?? null}
+            currentHasPin={!!collection.access_pin}
+            currentBottleMode={!!collection.bottle_mode}
+          />
         </div>
 
         {/* Recipient Reply */}

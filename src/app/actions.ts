@@ -50,6 +50,65 @@ export async function createCollection(formData: FormData) {
   redirect(`/e/${data.edit_id}`);
 }
 
+export async function updateCollectionSettings(editId: string, formData: FormData) {
+  // Fetch existing collection
+  const { data: collection, error } = await supabase
+    .from('collections')
+    .select('id, description, access_pin')
+    .eq('edit_id', editId)
+    .single();
+
+  if (error || !collection) throw new Error('Collection not found');
+
+  const key = deriveKey(collection.id);
+
+  // Description (re-encrypt if changed)
+  const description_raw = formData.get('description') as string | null;
+  const description = description_raw !== null
+    ? encryptField(description_raw, key)
+    : undefined;
+
+  // Time capsule
+  const unlock_at_raw = formData.get('unlock_at') as string | null;
+  const clear_unlock = formData.get('clear_unlock') === '1';
+  const unlock_at = clear_unlock
+    ? null
+    : unlock_at_raw ? new Date(unlock_at_raw).toISOString() : undefined;
+
+  // PIN — only update if user typed a new one; '----' or empty means keep existing
+  const pin_raw = formData.get('access_pin') as string | null;
+  const clear_pin = formData.get('clear_pin') === '1';
+  let access_pin: string | null | undefined = undefined;
+  if (clear_pin) {
+    access_pin = null;
+  } else if (pin_raw && pin_raw.length === 4 && /^\d{4}$/.test(pin_raw)) {
+    access_pin = createHash('sha256').update(pin_raw).digest('hex');
+  }
+
+  // Bottle mode
+  const bottle_mode_raw = formData.get('bottle_mode');
+  const bottle_mode = bottle_mode_raw !== null ? bottle_mode_raw === 'true' : undefined;
+
+  const updates: Record<string, unknown> = {};
+  if (description !== undefined) updates.description = description;
+  if (unlock_at !== undefined) updates.unlock_at = unlock_at;
+  if (access_pin !== undefined) updates.access_pin = access_pin;
+  if (bottle_mode !== undefined) updates.bottle_mode = bottle_mode;
+
+  if (Object.keys(updates).length === 0) {
+    redirect(`/e/${editId}`);
+    return;
+  }
+
+  const { error: updateError } = await supabase
+    .from('collections')
+    .update(updates)
+    .eq('edit_id', editId);
+
+  if (updateError) throw new Error('Failed to update settings');
+  redirect(`/e/${editId}`);
+}
+
 export async function createBook(editId: string, coverImageUrl: string, formData: FormData) {
   const title = formData.get('title') as string;
   const description = formData.get('description') as string;
