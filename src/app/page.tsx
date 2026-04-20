@@ -56,56 +56,56 @@ export default function Home() {
         </motion.h1>
         
         <motion.div
-           initial={{ opacity: 0, scale: 0.9 }}
-           animate={{ opacity: 1, scale: 1 }}
-           transition={{ delay: 0.7, duration: 0.5, ease: "easeOut" }}
-           style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', justifyContent: 'center' }}
+           initial={{ opacity: 0, y: 20 }}
+           animate={{ opacity: 1, y: 0 }}
+           transition={{ delay: 0.7, duration: 0.8, ease: "easeOut" }}
+           style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap', justifyContent: 'center', marginTop: '3rem' }}
         >
-          <Link href="/create" className="btn-primary" style={{ display: 'inline-flex', alignItems: 'center' }}>
-            CREATE A LIBRARY <span style={{ marginLeft: '10px' }}>&rarr;</span>
+          <Link href="/create" className="btn-primary" style={{ display: 'inline-flex', alignItems: 'center', padding: '1.2rem 2.5rem', fontSize: '14px' }}>
+            CREATE A LIBRARY <span style={{ marginLeft: '12px' }}>&rarr;</span>
           </Link>
-          <Link href="/bottles" className="btn-secondary" style={{ display: 'inline-flex', alignItems: 'center' }}>
+          <Link href="/bottles" className="btn-secondary" style={{ display: 'inline-flex', alignItems: 'center', padding: '1.2rem 2.5rem', fontSize: '14px' }}>
             BROWSE PUBLIC OCEAN 🌊
           </Link>
         </motion.div>
       </div>
 
       {/* Features Section */}
-      <section style={{ padding: '8rem 2rem 6rem', maxWidth: '1000px', margin: '0 auto', position: 'relative', zIndex: 10 }}>
-        <h2 className="font-heading" style={{ fontSize: '2.5rem', textAlign: 'center', marginBottom: '4rem', color: 'var(--text-primary)' }}>
+      <section style={{ padding: '12rem 2rem 10rem', maxWidth: '1200px', margin: '0 auto', position: 'relative', zIndex: 10 }}>
+        <h2 className="font-heading" style={{ fontSize: '3.5rem', textAlign: 'center', marginBottom: '6rem', color: 'var(--text-primary)' }}>
           a sanctuary for your thoughts.
         </h2>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '4rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '5rem 3rem' }}>
           
-          <div>
-            <div style={{ fontSize: '2rem', marginBottom: '1rem' }}>⏳</div>
-            <h3 className="font-heading" style={{ fontSize: '1.5rem', marginBottom: '0.75rem' }}>Time Capsules</h3>
-            <p style={{ color: 'var(--text-secondary)', lineHeight: 1.6, fontSize: '0.95rem' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
+            <div style={{ fontSize: '2.5rem', marginBottom: '1.5rem', background: 'var(--bg-secondary)', width: '80px', height: '80px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '50%', boxShadow: '0 10px 30px rgba(0,0,0,0.05)' }}>⏳</div>
+            <h3 className="font-heading" style={{ fontSize: '1.8rem', marginBottom: '1rem', color: 'var(--text-primary)' }}>Time Capsules</h3>
+            <p style={{ color: 'var(--text-secondary)', lineHeight: 1.8, fontSize: '1rem', maxWidth: '280px' }}>
               Write letters to the future. Lock your libraries with a precise countdown clock so they can only be opened when the time is right.
             </p>
           </div>
 
-          <div>
-            <div style={{ fontSize: '2rem', marginBottom: '1rem' }}>🔒</div>
-            <h3 className="font-heading" style={{ fontSize: '1.5rem', marginBottom: '0.75rem' }}>Absolute Privacy</h3>
-            <p style={{ color: 'var(--text-secondary)', lineHeight: 1.6, fontSize: '0.95rem' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
+            <div style={{ fontSize: '2.5rem', marginBottom: '1.5rem', background: 'var(--bg-secondary)', width: '80px', height: '80px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '50%', boxShadow: '0 10px 30px rgba(0,0,0,0.05)' }}>🔒</div>
+            <h3 className="font-heading" style={{ fontSize: '1.8rem', marginBottom: '1rem', color: 'var(--text-primary)' }}>Absolute Privacy</h3>
+            <p style={{ color: 'var(--text-secondary)', lineHeight: 1.8, fontSize: '1rem', maxWidth: '280px' }}>
               Your words are encrypted in the database. Add an optional 4-digit PIN lock to ensure only the intended recipient can read your books.
             </p>
           </div>
 
-          <div>
-            <div style={{ fontSize: '2rem', marginBottom: '1rem' }}>📖</div>
-            <h3 className="font-heading" style={{ fontSize: '1.5rem', marginBottom: '0.75rem' }}>Cinematic Atmosphere</h3>
-            <p style={{ color: 'var(--text-secondary)', lineHeight: 1.6, fontSize: '0.95rem' }}>
-              Curate the perfect reading environment with ambient soundscapes (crackling fires, rain), time-of-day lighting, and a real mechanical page-flip engine.
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
+            <div style={{ fontSize: '2.5rem', marginBottom: '1.5rem', background: 'var(--bg-secondary)', width: '80px', height: '80px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '50%', boxShadow: '0 10px 30px rgba(0,0,0,0.05)' }}>📖</div>
+            <h3 className="font-heading" style={{ fontSize: '1.8rem', marginBottom: '1rem', color: 'var(--text-primary)' }}>Cinematic Atmosphere</h3>
+            <p style={{ color: 'var(--text-secondary)', lineHeight: 1.8, fontSize: '1rem', maxWidth: '280px' }}>
+              Curate the perfect reading environment with ambient soundscapes, time-of-day lighting shifts, and a real mechanical page-flip engine.
             </p>
           </div>
 
-          <div>
-            <div style={{ fontSize: '2rem', marginBottom: '1rem' }}>🌊</div>
-            <h3 className="font-heading" style={{ fontSize: '1.5rem', marginBottom: '0.75rem' }}>Message in a Bottle</h3>
-            <p style={{ color: 'var(--text-secondary)', lineHeight: 1.6, fontSize: '0.95rem' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
+            <div style={{ fontSize: '2.5rem', marginBottom: '1.5rem', background: 'var(--bg-secondary)', width: '80px', height: '80px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '50%', boxShadow: '0 10px 30px rgba(0,0,0,0.05)' }}>🌊</div>
+            <h3 className="font-heading" style={{ fontSize: '1.8rem', marginBottom: '1rem', color: 'var(--text-primary)' }}>Message in a Bottle</h3>
+            <p style={{ color: 'var(--text-secondary)', lineHeight: 1.8, fontSize: '1rem', maxWidth: '280px' }}>
               Not everything needs a destination. Cast anonymous libraries into our public ocean for strangers to find, read, and cherish.
             </p>
           </div>
