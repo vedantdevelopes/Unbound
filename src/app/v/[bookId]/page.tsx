@@ -38,7 +38,7 @@ export default async function ViewLibrary({ params }: { params: Promise<{ bookId
 
   const { data: collection, error } = await supabase
     .from('collections')
-    .select('*, books(id, title, cover_image_url, spine_color, pages(content, is_published))')
+    .select('*, books(id, title, cover_image_url, spine_color, is_published, pages(content, is_published))')
     .eq('view_id', viewId)
     .single();
 
@@ -72,10 +72,11 @@ export default async function ViewLibrary({ params }: { params: Promise<{ bookId
   const hasReply      = !!collection.reply_content;
 
   const books = (collection.books ?? [])
+    .filter((book: { is_published: boolean }) => book.is_published !== false)
     .sort((a: { created_at: string }, b: { created_at: string }) =>
       new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
     )
-    .map((book: { id: string; title: string; description: string; cover_image_url: string; spine_color: string; pages: { content: string; is_published: boolean }[] }) => {
+    .map((book: { id: string; title: string; description: string; cover_image_url: string; spine_color: string; is_published: boolean; pages: { content: string; is_published: boolean }[] }) => {
       const wordCount = (book.pages ?? [])
         .filter(p => p.is_published)
         .reduce((acc, p) => acc + (p.content?.replace(/<[^>]*>/g, '').trim().split(/\s+/).filter(Boolean).length ?? 0), 0);

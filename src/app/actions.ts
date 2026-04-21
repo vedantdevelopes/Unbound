@@ -109,6 +109,16 @@ export async function updateCollectionSettings(editId: string, formData: FormDat
   redirect(`/e/${editId}`);
 }
 
+export async function toggleBookPublished(editId: string, bookId: string, currentlyPublished: boolean) {
+  const { error } = await supabase
+    .from('books')
+    .update({ is_published: !currentlyPublished })
+    .eq('id', bookId);
+
+  if (error) throw new Error('Failed to toggle book visibility');
+  redirect(`/e/${editId}`);
+}
+
 export async function createBook(editId: string, coverImageUrl: string, formData: FormData) {
   const title = formData.get('title') as string;
   const description = formData.get('description') as string;
