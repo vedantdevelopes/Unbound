@@ -7,7 +7,7 @@ export default function ShareButton({ viewId }: { viewId: string }) {
   const [isOpen, setIsOpen] = useState(false);
   const [copied, setCopied] = useState(false);
 
-  const shareLink = typeof window !== 'undefined' ? `${window.location.origin}/v/${viewId}` : '';
+  const shareLink = typeof window !== 'undefined' ? `${window.location.origin}/v/${viewId}` : `https://unbound-book.vercel.app/v/${viewId}`;
 
   const handleCopy = () => {
     navigator.clipboard.writeText(shareLink);
@@ -19,75 +19,125 @@ export default function ShareButton({ viewId }: { viewId: string }) {
     <>
       <style dangerouslySetInnerHTML={{__html: `
         @media print {
-          body * {
-            visibility: hidden;
-          }
-          #library-ticket, #library-ticket * {
-            visibility: visible;
-          }
+          body * { visibility: hidden; }
+          #library-ticket, #library-ticket * { visibility: visible; }
           #library-ticket {
-            position: absolute;
-            left: 0;
-            top: 0;
-            width: 100vw;
-            height: 100vh;
-            border: none !important;
-            box-shadow: none !important;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            background: none !important;
+            position: fixed; inset: 0;
+            display: flex; flex-direction: column;
+            justify-content: center; align-items: center;
+            background: white !important;
+            border: none !important; box-shadow: none !important;
           }
         }
       `}} />
-      <button className="btn-primary" onClick={() => setIsOpen(true)}>
-        GET TICKET
+
+      <button
+        onClick={() => setIsOpen(true)}
+        style={{
+          fontFamily: 'var(--font-geist-mono)', fontSize: '11px', letterSpacing: '0.15em',
+          textTransform: 'uppercase', color: '#0c0a08', background: '#c8902a',
+          border: 'none', borderRadius: '6px', padding: '0.55rem 1.2rem',
+          cursor: 'pointer', fontWeight: 700,
+        }}
+      >
+        Get Ticket
       </button>
 
       {isOpen && (
-        <div style={{
-          position: 'fixed', inset: 0, zIndex: 50,
-          backgroundColor: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(5px)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          padding: '1rem'
-        }}>
-          <div style={{ maxWidth: '500px', width: '100%', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-            
-            <div id="library-ticket" style={{ 
-              background: '#f4f1ec url("https://www.transparenttextures.com/patterns/cream-paper.png")',
-              padding: '3rem 2rem', 
-              borderRadius: '16px', 
-              border: '2px dashed var(--accent)',
+        <div
+          onClick={e => { if (e.target === e.currentTarget) setIsOpen(false); }}
+          style={{
+            position: 'fixed', inset: 0, zIndex: 200,
+            background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(8px)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            padding: '2rem',
+          }}
+        >
+          <div style={{ maxWidth: '420px', width: '100%', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+
+            {/* Ticket */}
+            <div id="library-ticket" style={{
+              background: '#f5edd8',
+              borderRadius: '12px',
               position: 'relative',
               textAlign: 'center',
-              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)'
+              overflow: 'hidden',
+              boxShadow: '0 40px 80px rgba(0,0,0,0.6)',
             }}>
-                <div style={{ position: 'absolute', top: '-10px', left: '50%', transform: 'translateX(-50%)', background: 'var(--accent)', color: 'white', padding: '0.2rem 1rem', fontSize: '12px', letterSpacing: '0.2em' }} className="font-mono">
-                    ADMIT ONE
-                </div>
-                
-                <h2 className="font-heading" style={{ fontSize: '2.5rem', marginBottom: '0.5rem', color: 'var(--text-primary)' }}>Library Access</h2>
-                <p className="font-serif-italic" style={{ fontSize: '1.2rem', color: 'var(--text-secondary)', marginBottom: '2rem' }}>scan to unlock your private collection</p>
+              {/* Top bar */}
+              <div style={{ background: '#2a1a0a', padding: '0.75rem 1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span style={{ fontFamily: 'var(--font-geist-mono)', fontSize: '9px', letterSpacing: '0.3em', textTransform: 'uppercase', color: 'rgba(232,217,184,0.5)' }}>
+                  unbound
+                </span>
+                <span style={{ fontFamily: 'var(--font-geist-mono)', fontSize: '9px', letterSpacing: '0.3em', textTransform: 'uppercase', color: '#c8902a' }}>
+                  ADMIT ONE
+                </span>
+              </div>
 
-                <div style={{ background: 'white', padding: '1.5rem', borderRadius: '4px', display: 'inline-block', marginBottom: '2rem', border: '12px solid white', boxShadow: '0 4px 6px rgba(0,0,0,0.1)' }}>
-                  <QRCode value={shareLink} size={180} fgColor="var(--text-primary)" level="H" />
+              {/* Body */}
+              <div style={{ padding: '2.5rem 2rem' }}>
+                <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: '2rem', fontWeight: 400, color: '#2a1a0a', marginBottom: '0.4rem' }}>
+                  Library Access
+                </h2>
+                <p style={{ fontFamily: 'var(--font-instrument)', fontStyle: 'italic', fontSize: '1rem', color: '#8a6a50', marginBottom: '2rem' }}>
+                  Scan to open your private collection
+                </p>
+
+                <div style={{ background: '#fff', padding: '16px', borderRadius: '8px', display: 'inline-block', boxShadow: '0 4px 16px rgba(0,0,0,0.12)', marginBottom: '2rem' }}>
+                  <QRCode value={shareLink} size={160} fgColor="#2a1a0a" level="H" />
                 </div>
-                
-                <p className="font-mono" style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>POWERED BY UNBOUND</p>
+
+                {/* Dashed perforated line */}
+                <div style={{ borderTop: '2px dashed rgba(150,120,80,0.3)', margin: '0 -2rem 1.5rem', position: 'relative' }}>
+                  <div style={{ position: 'absolute', left: '-12px', top: '-10px', width: '20px', height: '20px', borderRadius: '50%', background: '#0c0a08' }} />
+                  <div style={{ position: 'absolute', right: '-12px', top: '-10px', width: '20px', height: '20px', borderRadius: '50%', background: '#0c0a08' }} />
+                </div>
+
+                <p style={{ fontFamily: 'var(--font-geist-mono)', fontSize: '9px', letterSpacing: '0.25em', color: 'rgba(101,77,60,0.5)', textTransform: 'uppercase' }}>
+                  POWERED BY UNBOUND
+                </p>
+              </div>
             </div>
 
-            <div style={{ display: 'flex', gap: '1rem', background: 'white', padding: '1rem', borderRadius: '8px' }}>
-                <button className="btn-primary" style={{ flex: 1 }} onClick={() => window.print()}>
-                  🖨️ PRINT
-                </button>
-                <button className="btn-secondary" style={{ flex: 1 }} onClick={handleCopy}>
-                  {copied ? 'COPIED!' : '🔗 COPY LINK'}
-                </button>
+            {/* Actions */}
+            <div style={{ display: 'flex', gap: '0.75rem' }}>
+              <button
+                onClick={() => window.print()}
+                style={{
+                  flex: 1, padding: '0.9rem',
+                  background: '#c8902a', color: '#0c0a08', border: 'none', borderRadius: '8px',
+                  fontFamily: 'var(--font-geist-mono)', fontSize: '11px', letterSpacing: '0.15em',
+                  textTransform: 'uppercase', fontWeight: 700, cursor: 'pointer',
+                }}
+              >
+                🖨️ Print
+              </button>
+              <button
+                onClick={handleCopy}
+                style={{
+                  flex: 1, padding: '0.9rem',
+                  background: copied ? 'rgba(16,185,129,0.15)' : 'rgba(232,217,184,0.08)',
+                  color: copied ? '#10b981' : '#e8d9b8',
+                  border: `1px solid ${copied ? 'rgba(16,185,129,0.3)' : 'rgba(232,217,184,0.2)'}`,
+                  borderRadius: '8px',
+                  fontFamily: 'var(--font-geist-mono)', fontSize: '11px', letterSpacing: '0.15em',
+                  textTransform: 'uppercase', cursor: 'pointer',
+                  transition: 'all 0.2s',
+                }}
+              >
+                {copied ? '✓ Copied!' : '🔗 Copy Link'}
+              </button>
             </div>
 
-            <button className="btn-secondary" style={{ border: 'none', color: 'white', alignSelf: 'center' }} onClick={() => setIsOpen(false)}>
-              CLOSE
+            <button
+              onClick={() => setIsOpen(false)}
+              style={{
+                background: 'none', border: 'none', color: 'rgba(232,217,184,0.4)',
+                fontFamily: 'var(--font-geist-mono)', fontSize: '10px', letterSpacing: '0.2em',
+                textTransform: 'uppercase', cursor: 'pointer', alignSelf: 'center', padding: '0.5rem',
+              }}
+            >
+              Close
             </button>
           </div>
         </div>
