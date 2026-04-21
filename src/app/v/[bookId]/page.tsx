@@ -38,7 +38,7 @@ export default async function ViewLibrary({ params }: { params: Promise<{ bookId
 
   const { data: collection, error } = await supabase
     .from('collections')
-    .select('*, books(id, title, cover_image_url, spine_color, is_published, pages(content, is_published))')
+    .select('*, books(*, pages(content, is_published))')
     .eq('view_id', viewId)
     .single();
 

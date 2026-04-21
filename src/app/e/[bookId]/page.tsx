@@ -13,7 +13,7 @@ export default async function EditDashboard({ params }: { params: Promise<{ book
 
   const { data: collection, error } = await supabase
     .from('collections')
-    .select('*, books(id, title, description, cover_image_url, spine_color, created_at, is_published, pages(content, is_published))')
+    .select('*, books(*, pages(content, is_published))')
     .eq('edit_id', editId)
     .single();
 
