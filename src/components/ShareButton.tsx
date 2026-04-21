@@ -49,8 +49,9 @@ export default function ShareButton({ viewId }: { viewId: string }) {
           style={{
             position: 'fixed', inset: 0, zIndex: 200,
             background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(8px)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            padding: '2rem',
+            overflowY: 'auto',
+            display: 'flex', alignItems: 'flex-start', justifyContent: 'center',
+            padding: '6rem 2rem 3rem',
           }}
         >
           <div style={{ maxWidth: '420px', width: '100%', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
