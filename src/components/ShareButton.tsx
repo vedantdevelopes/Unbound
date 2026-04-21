@@ -7,7 +7,9 @@ export default function ShareButton({ viewId }: { viewId: string }) {
   const [isOpen, setIsOpen] = useState(false);
   const [copied, setCopied] = useState(false);
 
-  const shareLink = typeof window !== 'undefined' ? `${window.location.origin}/v/${viewId}` : `https://unbound-book.vercel.app/v/${viewId}`;
+  const shareLink = typeof window !== 'undefined'
+    ? `${window.location.origin}/v/${viewId}`
+    : `https://unbound-book.vercel.app/v/${viewId}`;
 
   const handleCopy = () => {
     navigator.clipboard.writeText(shareLink);
@@ -31,6 +33,7 @@ export default function ShareButton({ viewId }: { viewId: string }) {
         }
       `}} />
 
+      {/* Trigger */}
       <button
         onClick={() => setIsOpen(true)}
         style={{
@@ -44,37 +47,51 @@ export default function ShareButton({ viewId }: { viewId: string }) {
       </button>
 
       {isOpen && (
-        <div
-          onClick={e => { if (e.target === e.currentTarget) setIsOpen(false); }}
-          style={{
-            position: 'fixed', inset: 0, zIndex: 200,
-            background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(8px)',
-            overflowY: 'auto',
-            WebkitOverflowScrolling: 'touch',
-          }}
-        >
-          {/* Inner wrapper centers content — margin:auto trick works when parent scrolls */}
-          <div style={{
-            minHeight: '100%',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            padding: '2rem',
-          }}>
-            <div style={{
-              maxWidth: '420px', width: '100%',
-              display: 'flex', flexDirection: 'column', gap: '1rem',
-            }}>
+        <>
+          {/* ── Backdrop ── */}
+          <div
+            onClick={() => setIsOpen(false)}
+            style={{
+              position: 'fixed',
+              top: 0, left: 0, right: 0, bottom: 0,
+              zIndex: 9998,
+              background: 'rgba(0,0,0,0.85)',
+              backdropFilter: 'blur(10px)',
+              WebkitBackdropFilter: 'blur(10px)',
+            }}
+          />
 
+          {/* ── Modal content — absolutely centered, never clipped ── */}
+          <div
+            style={{
+              position: 'fixed',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              zIndex: 9999,
+              width: 'min(420px, calc(100vw - 2rem))',
+              maxHeight: '88vh',
+              overflowY: 'auto',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '1rem',
+            }}
+          >
             {/* Ticket */}
             <div id="library-ticket" style={{
               background: '#f5edd8',
               borderRadius: '12px',
-              position: 'relative',
-              textAlign: 'center',
               overflow: 'hidden',
-              boxShadow: '0 40px 80px rgba(0,0,0,0.6)',
+              boxShadow: '0 40px 80px rgba(0,0,0,0.7)',
             }}>
               {/* Top bar */}
-              <div style={{ background: '#2a1a0a', padding: '0.75rem 1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{
+                background: '#2a1a0a',
+                padding: '0.75rem 1.5rem',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+              }}>
                 <span style={{ fontFamily: 'var(--font-geist-mono)', fontSize: '9px', letterSpacing: '0.3em', textTransform: 'uppercase', color: 'rgba(232,217,184,0.5)' }}>
                   unbound
                 </span>
@@ -84,7 +101,7 @@ export default function ShareButton({ viewId }: { viewId: string }) {
               </div>
 
               {/* Body */}
-              <div style={{ padding: '2.5rem 2rem' }}>
+              <div style={{ padding: '2.5rem 2rem', textAlign: 'center' }}>
                 <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: '2rem', fontWeight: 400, color: '#2a1a0a', marginBottom: '0.4rem' }}>
                   Library Access
                 </h2>
@@ -96,27 +113,30 @@ export default function ShareButton({ viewId }: { viewId: string }) {
                   <QRCode value={shareLink} size={160} fgColor="#2a1a0a" level="H" />
                 </div>
 
-                {/* Dashed perforated line */}
-                <div style={{ borderTop: '2px dashed rgba(150,120,80,0.3)', margin: '0 -2rem 1.5rem', position: 'relative' }}>
-                  <div style={{ position: 'absolute', left: '-12px', top: '-10px', width: '20px', height: '20px', borderRadius: '50%', background: '#0c0a08' }} />
-                  <div style={{ position: 'absolute', right: '-12px', top: '-10px', width: '20px', height: '20px', borderRadius: '50%', background: '#0c0a08' }} />
+                {/* Perforated line */}
+                <div style={{ position: 'relative', margin: '0 -2rem 1.5rem' }}>
+                  <div style={{ borderTop: '2px dashed rgba(150,120,80,0.35)' }} />
+                  <div style={{ position: 'absolute', left: '-10px', top: '-10px', width: '20px', height: '20px', borderRadius: '50%', background: '#f5edd8', border: '1px solid rgba(150,120,80,0.2)' }} />
+                  <div style={{ position: 'absolute', right: '-10px', top: '-10px', width: '20px', height: '20px', borderRadius: '50%', background: '#f5edd8', border: '1px solid rgba(150,120,80,0.2)' }} />
                 </div>
 
-                <p style={{ fontFamily: 'var(--font-geist-mono)', fontSize: '9px', letterSpacing: '0.25em', color: 'rgba(101,77,60,0.5)', textTransform: 'uppercase' }}>
+                <p style={{ fontFamily: 'var(--font-geist-mono)', fontSize: '9px', letterSpacing: '0.25em', color: 'rgba(101,77,60,0.45)', textTransform: 'uppercase' }}>
                   POWERED BY UNBOUND
                 </p>
               </div>
             </div>
 
-            {/* Actions */}
+            {/* Action buttons */}
             <div style={{ display: 'flex', gap: '0.75rem' }}>
               <button
                 onClick={() => window.print()}
                 style={{
                   flex: 1, padding: '0.9rem',
-                  background: '#c8902a', color: '#0c0a08', border: 'none', borderRadius: '8px',
-                  fontFamily: 'var(--font-geist-mono)', fontSize: '11px', letterSpacing: '0.15em',
-                  textTransform: 'uppercase', fontWeight: 700, cursor: 'pointer',
+                  background: '#c8902a', color: '#0c0a08',
+                  border: 'none', borderRadius: '8px',
+                  fontFamily: 'var(--font-geist-mono)', fontSize: '11px',
+                  letterSpacing: '0.15em', textTransform: 'uppercase',
+                  fontWeight: 700, cursor: 'pointer',
                 }}
               >
                 🖨️ Print
@@ -129,28 +149,30 @@ export default function ShareButton({ viewId }: { viewId: string }) {
                   color: copied ? '#10b981' : '#e8d9b8',
                   border: `1px solid ${copied ? 'rgba(16,185,129,0.3)' : 'rgba(232,217,184,0.2)'}`,
                   borderRadius: '8px',
-                  fontFamily: 'var(--font-geist-mono)', fontSize: '11px', letterSpacing: '0.15em',
-                  textTransform: 'uppercase', cursor: 'pointer',
-                  transition: 'all 0.2s',
+                  fontFamily: 'var(--font-geist-mono)', fontSize: '11px',
+                  letterSpacing: '0.15em', textTransform: 'uppercase',
+                  cursor: 'pointer', transition: 'all 0.2s',
                 }}
               >
                 {copied ? '✓ Copied!' : '🔗 Copy Link'}
               </button>
             </div>
 
+            {/* Close */}
             <button
               onClick={() => setIsOpen(false)}
               style={{
-                background: 'none', border: 'none', color: 'rgba(232,217,184,0.4)',
-                fontFamily: 'var(--font-geist-mono)', fontSize: '10px', letterSpacing: '0.2em',
-                textTransform: 'uppercase', cursor: 'pointer', alignSelf: 'center', padding: '0.5rem',
+                background: 'none', border: 'none',
+                color: 'rgba(232,217,184,0.4)',
+                fontFamily: 'var(--font-geist-mono)', fontSize: '10px',
+                letterSpacing: '0.2em', textTransform: 'uppercase',
+                cursor: 'pointer', alignSelf: 'center', padding: '0.5rem',
               }}
             >
               Close
             </button>
-            </div>
           </div>
-        </div>
+        </>
       )}
     </>
   );
