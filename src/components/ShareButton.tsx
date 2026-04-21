@@ -49,15 +49,20 @@ export default function ShareButton({ viewId }: { viewId: string }) {
           style={{
             position: 'fixed', inset: 0, zIndex: 200,
             background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(8px)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            padding: '1rem',
+            overflowY: 'auto',
+            WebkitOverflowScrolling: 'touch',
           }}
         >
+          {/* Inner wrapper centers content — margin:auto trick works when parent scrolls */}
           <div style={{
-            maxWidth: '420px', width: '100%',
-            maxHeight: '90vh', overflowY: 'auto',
-            display: 'flex', flexDirection: 'column', gap: '1rem',
+            minHeight: '100%',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            padding: '2rem',
           }}>
+            <div style={{
+              maxWidth: '420px', width: '100%',
+              display: 'flex', flexDirection: 'column', gap: '1rem',
+            }}>
 
             {/* Ticket */}
             <div id="library-ticket" style={{
@@ -143,6 +148,7 @@ export default function ShareButton({ viewId }: { viewId: string }) {
             >
               Close
             </button>
+            </div>
           </div>
         </div>
       )}
