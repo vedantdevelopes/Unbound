@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import QRCode from 'react-qr-code';
 
@@ -8,6 +8,7 @@ export default function ShareButton({ viewId }: { viewId: string }) {
   const [isOpen, setIsOpen] = useState(false);
   const [copied, setCopied] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const qrRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => { setMounted(true); }, []);
 
@@ -19,6 +20,32 @@ export default function ShareButton({ viewId }: { viewId: string }) {
     navigator.clipboard.writeText(shareLink);
     setCopied(true);
     setTimeout(() => setCopied(false), 2500);
+  };
+
+  const downloadQR = () => {
+    const svgEl = qrRef.current?.querySelector('svg');
+    if (!svgEl) return;
+    const svgData = new XMLSerializer().serializeToString(svgEl);
+    const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
+    const url = URL.createObjectURL(svgBlob);
+    const img = new Image();
+    img.onload = () => {
+      const padding = 24;
+      const size = img.width + padding * 2;
+      const canvas = document.createElement('canvas');
+      canvas.width = size;
+      canvas.height = size;
+      const ctx = canvas.getContext('2d')!;
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, size, size);
+      ctx.drawImage(img, padding, padding);
+      URL.revokeObjectURL(url);
+      const a = document.createElement('a');
+      a.download = `unbound-library-qr.png`;
+      a.href = canvas.toDataURL('image/png');
+      a.click();
+    };
+    img.src = url;
   };
 
   useEffect(() => {
@@ -81,8 +108,8 @@ export default function ShareButton({ viewId }: { viewId: string }) {
               Scan to open the private collection
             </p>
 
-            {/* QR */}
-            <div style={{
+            {/* QR — attach ref here for PNG export */}
+            <div ref={qrRef} style={{
               background: '#fff', padding: '14px', borderRadius: '8px',
               display: 'inline-block', boxShadow: '0 4px 16px rgba(0,0,0,0.1)',
               marginBottom: '1.5rem',
@@ -109,7 +136,7 @@ export default function ShareButton({ viewId }: { viewId: string }) {
 
         {/* Actions */}
         <div style={{ display: 'flex', gap: '0.75rem' }}>
-          <button onClick={() => window.print()} style={{
+          <button onClick={downloadQR} style={{
             flex: 1, padding: '0.85rem',
             background: '#c8902a', color: '#0c0a08',
             border: 'none', borderRadius: '8px',
@@ -117,7 +144,7 @@ export default function ShareButton({ viewId }: { viewId: string }) {
             letterSpacing: '0.12em', textTransform: 'uppercase',
             fontWeight: 700, cursor: 'pointer',
           }}>
-            🖨️ Print
+            ↓ Save QR
           </button>
           <button onClick={handleCopy} style={{
             flex: 1, padding: '0.85rem',
@@ -153,13 +180,7 @@ export default function ShareButton({ viewId }: { viewId: string }) {
         @media print {
           body * { visibility: hidden; }
           #library-ticket, #library-ticket * { visibility: visible; }
-          #library-ticket {
-            position: fixed; inset: 0;
-            display: flex; flex-direction: column;
-            justify-content: center; align-items: center;
-            background: white !important;
-            border: none !important; box-shadow: none !important;
-          }
+          #library-ticket { position: fixed; inset: 0; display: flex; flex-direction: column; justify-content: center; align-items: center; background: white !important; border: none !important; box-shadow: none !important; }
         }
       `}} />
 
