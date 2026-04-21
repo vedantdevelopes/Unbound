@@ -25,7 +25,7 @@ export default function BookPublishToggle({ editId, bookId, isPublished }: Props
       title={isPublished ? 'Click to hide from public view' : 'Click to make visible'}
       style={{
         position: 'absolute', top: '0.75rem', left: '0.75rem',
-        zIndex: 10, border: 'none', borderRadius: '6px',
+        zIndex: 10, borderRadius: '6px',
         padding: '0.3rem 0.65rem',
         fontFamily: 'var(--font-geist-mono)', fontSize: '9px',
         letterSpacing: '0.15em', textTransform: 'uppercase',
