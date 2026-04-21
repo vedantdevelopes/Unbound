@@ -25,17 +25,18 @@ export default async function EditDashboard({ params }: { params: Promise<{ book
   const replyContent  = collection.reply_content ? decryptField(collection.reply_content, key) : null;
 
   type RawBook = {
-    id: string; title: string; description: string;
-    cover_image_url: string; spine_color: string;
-    created_at: string; is_published: boolean;
-    pages: { content: string; is_published: boolean }[];
+    id: string; title: string; description: string | null;
+    cover_image_url: string | null; spine_color: string | null;
+    created_at: string; is_published: boolean | null;
+    pages: { content: string; is_published: boolean }[] | null;
   };
-  const books = (collection.books as RawBook[] ?? [])
+  const rawBooks: RawBook[] = Array.isArray(collection.books) ? collection.books : [];
+  const books = rawBooks
     .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())
     .map(book => ({
       ...book,
-      title:       decryptField(book.title, key),
-      description: decryptField(book.description, key),
+      title:       book.title ? decryptField(book.title, key) : '',
+      description: book.description ? decryptField(book.description, key) : '',
     }));
 
   const totalPages    = books.reduce((s, b) => s + (b.pages?.length ?? 0), 0);
@@ -53,10 +54,7 @@ export default async function EditDashboard({ params }: { params: Promise<{ book
 
       {/* Nav */}
       <nav style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '1.2rem 3rem', background: 'rgba(12,10,8,0.9)', backdropFilter: 'blur(12px)', borderBottom: '1px solid rgba(232,217,184,0.06)' }}>
-        <Link href="/dashboard" style={{ fontFamily: 'var(--font-geist-mono)', fontSize: '10px', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(232,217,184,0.4)', textDecoration: 'none', transition: 'color 0.2s' }}
-          onMouseEnter={e => { e.currentTarget.style.color = '#e8d9b8'; }}
-          onMouseLeave={e => { e.currentTarget.style.color = 'rgba(232,217,184,0.4)'; }}
-        >
+        <Link href="/dashboard" style={{ fontFamily: 'var(--font-geist-mono)', fontSize: '10px', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(232,217,184,0.4)', textDecoration: 'none' }}>
           ← Libraries
         </Link>
         <Link href="/" style={{ fontFamily: 'var(--font-instrument)', fontSize: '1.5rem', fontStyle: 'italic', color: '#e8d9b8', textDecoration: 'none' }}>unbound</Link>
@@ -65,11 +63,7 @@ export default async function EditDashboard({ params }: { params: Promise<{ book
             fontFamily: 'var(--font-geist-mono)', fontSize: '11px', letterSpacing: '0.15em',
             textTransform: 'uppercase', color: 'rgba(232,217,184,0.6)', textDecoration: 'none',
             padding: '0.55rem 1.2rem', borderRadius: '6px', border: '1px solid rgba(232,217,184,0.15)',
-            transition: 'all 0.2s',
-          }}
-            onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(232,217,184,0.4)'; e.currentTarget.style.color = '#e8d9b8'; }}
-            onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(232,217,184,0.15)'; e.currentTarget.style.color = 'rgba(232,217,184,0.6)'; }}
-          >
+          }}>
             + New Book
           </Link>
           <ShareButton viewId={collection.view_id} />
@@ -248,11 +242,8 @@ export default async function EditDashboard({ params }: { params: Promise<{ book
                     borderRadius: '4px 12px 12px 4px',
                     border: '1px dashed rgba(232,217,184,0.12)',
                     display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                    gap: '0.75rem', transition: 'all 0.25s',
-                  }}
-                    onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(200,144,42,0.35)'; e.currentTarget.style.background = 'rgba(200,144,42,0.03)'; }}
-                    onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(232,217,184,0.12)'; e.currentTarget.style.background = 'transparent'; }}
-                  >
+                    gap: '0.75rem',
+                  }}>
                     <div style={{ fontSize: '2rem', opacity: 0.25 }}>+</div>
                     <span style={{ fontFamily: 'var(--font-geist-mono)', fontSize: '9px', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(232,217,184,0.25)' }}>
                       New Book
