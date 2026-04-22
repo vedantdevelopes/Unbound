@@ -39,8 +39,21 @@ export default async function EditDashboard({ params }: { params: Promise<{ book
       description: book.description ? decryptField(book.description, key) : '',
     }));
 
+  const countWords = (html: string | null | undefined): number => {
+    if (!html) return 0;
+    const text = html
+      .replace(/<[^>]*>/g, ' ')   // strip tags
+      .replace(/&nbsp;/g, ' ')    // decode entities
+      .replace(/&amp;/g, '&')
+      .replace(/&lt;/g, '<')
+      .replace(/&gt;/g, '>')
+      .replace(/\s+/g, ' ')       // collapse whitespace
+      .trim();
+    return text.length === 0 ? 0 : text.split(' ').filter(w => w.length > 0).length;
+  };
+
   const totalPages    = books.reduce((s, b) => s + (b.pages?.length ?? 0), 0);
-  const totalWords    = books.reduce((s, b) => s + (b.pages ?? []).reduce((ps, p) => ps + (p.content?.replace(/<[^>]*>/g, '').trim().split(/\s+/).filter(Boolean).length ?? 0), 0), 0);
+  const totalWords    = books.reduce((s, b) => s + (b.pages ?? []).reduce((ps, p) => ps + countWords(p.content), 0), 0);
   const totalReadMin  = Math.max(1, Math.round(totalWords / 200));
   const publishedBooks = books.filter(b => b.is_published !== false).length;
 
