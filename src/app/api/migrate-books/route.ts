@@ -1,9 +1,17 @@
 import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
 
-export const runtime = 'edge';
+export async function GET(request: Request) {
+  // ── Auth gate: require MIGRATION_SECRET ──────────────────────────────────
+  const { searchParams } = new URL(request.url);
+  const secret = searchParams.get('secret');
+  if (!process.env.MIGRATION_SECRET || secret !== process.env.MIGRATION_SECRET) {
+    return NextResponse.json(
+      { error: 'Unauthorized. Provide ?secret=<MIGRATION_SECRET> to access this endpoint.' },
+      { status: 401 }
+    );
+  }
 
-export async function GET() {
   try {
     // Add is_published to books — safe to run multiple times (IF NOT EXISTS semantics via default)
     const { error } = await supabase.rpc('run_migration', {

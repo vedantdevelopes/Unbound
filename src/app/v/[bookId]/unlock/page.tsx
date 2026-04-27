@@ -46,7 +46,9 @@ export default async function UnlockPage({
             borderRadius: '6px', padding: '0.75rem', marginBottom: '1.5rem',
             fontFamily: 'var(--font-ui)', fontSize: '11px', color: '#e06060', letterSpacing: '0.1em',
           }}>
-            Incorrect code — try again.
+            {hasError === 'rate'
+              ? 'Too many attempts — please wait 15 minutes before trying again.'
+              : 'Incorrect code — try again.'}
           </div>
         )}
 

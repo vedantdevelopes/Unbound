@@ -4,7 +4,40 @@ import { supabase } from '@/lib/supabase';
 import { redirect } from 'next/navigation';
 import { deriveKey, encryptField, decryptField } from '@/lib/crypto';
 import { randomUUID, createHash } from 'crypto';
-import { cookies } from 'next/headers';
+import { cookies, headers } from 'next/headers';
+
+// ── Rate Limiter (in-memory, per-process) ───────────────────────────────────
+const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
+const RATE_LIMIT_MAX = 5;
+const RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000; // 15 minutes
+
+function isRateLimited(key: string): boolean {
+  const now = Date.now();
+  const entry = rateLimitMap.get(key);
+  if (!entry || now > entry.resetAt) {
+    rateLimitMap.set(key, { count: 1, resetAt: now + RATE_LIMIT_WINDOW_MS });
+    return false;
+  }
+  entry.count++;
+  return entry.count > RATE_LIMIT_MAX;
+}
+
+// ── File Upload Validation ──────────────────────────────────────────────────
+const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/avif'];
+const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
+
+function validateUploadedFile(file: File): void {
+  if (file.size > MAX_FILE_SIZE) {
+    throw new Error(`File too large (${(file.size / 1024 / 1024).toFixed(1)}MB). Maximum is 5MB.`);
+  }
+  if (!ALLOWED_MIME_TYPES.includes(file.type)) {
+    throw new Error(`Invalid file type "${file.type}". Allowed: JPEG, PNG, WebP, GIF, AVIF.`);
+  }
+}
+
+function sanitizeFileName(name: string): string {
+  return name.replace(/[^a-zA-Z0-9._-]/g, '_').replace(/\.{2,}/g, '.');
+}
 
 export async function createCollection(formData: FormData) {
   const recipient_name = formData.get('recipient_name') as string;
@@ -134,7 +167,8 @@ export async function createBook(editId: string, coverImageUrl: string, formData
 
   // Handle direct file upload to Supabase Storage if provided
   if (coverFile && coverFile.size > 0) {
-    const fileExt = coverFile.name.split('.').pop();
+    validateUploadedFile(coverFile);
+    const fileExt = sanitizeFileName(coverFile.name).split('.').pop();
     const fileName = `${editId}-${Date.now()}.${fileExt}`;
 
     const { error: uploadError } = await supabase
@@ -199,7 +233,8 @@ export async function addPage(editId: string, bookId: string, formData: FormData
   const media_urls: string[] = [];
 
   if (polaroidFile && polaroidFile.size > 0) {
-    const fileExt = polaroidFile.name.split('.').pop();
+    validateUploadedFile(polaroidFile);
+    const fileExt = sanitizeFileName(polaroidFile.name).split('.').pop();
     const fileName = `${bookId}-${Date.now()}.${fileExt}`;
 
     const { error: uploadError } = await supabase
@@ -274,6 +309,15 @@ export async function submitReply(viewId: string, formData: FormData) {
 
 // ── PIN Verification ────────────────────────────────────────────────────────
 export async function verifyPin(viewId: string, formData: FormData) {
+  // ── Rate limiting: 5 attempts per 15 minutes per IP+viewId ────────────
+  const headerStore = await headers();
+  const ip = headerStore.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+  const rateLimitKey = `pin:${ip}:${viewId}`;
+
+  if (isRateLimited(rateLimitKey)) {
+    redirect(`/v/${viewId}/unlock?error=rate`);
+  }
+
   const pin = (formData.get('pin') as string)?.trim();
 
   const { data: collection } = await supabase
@@ -292,6 +336,7 @@ export async function verifyPin(viewId: string, formData: FormData) {
   const cookieStore = await cookies();
   cookieStore.set(`unbound-pin-${viewId}`, 'verified', {
     httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
     maxAge: 60 * 60 * 24 * 7,
     sameSite: 'strict',
     path: '/',

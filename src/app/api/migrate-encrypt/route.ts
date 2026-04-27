@@ -11,7 +11,17 @@ import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
 import { deriveKey, encryptField, decryptField } from '@/lib/crypto';
 
-export async function GET() {
+export async function GET(request: Request) {
+  // ── Auth gate: require MIGRATION_SECRET ──────────────────────────────────
+  const { searchParams } = new URL(request.url);
+  const secret = searchParams.get('secret');
+  if (!process.env.MIGRATION_SECRET || secret !== process.env.MIGRATION_SECRET) {
+    return NextResponse.json(
+      { error: 'Unauthorized. Provide ?secret=<MIGRATION_SECRET> to access this endpoint.' },
+      { status: 401 }
+    );
+  }
+
   if (!process.env.ENCRYPTION_MASTER_SECRET) {
     return NextResponse.json(
       { error: 'ENCRYPTION_MASTER_SECRET is not set. Add it to your environment variables.' },

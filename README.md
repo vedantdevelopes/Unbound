@@ -36,11 +36,18 @@ Deploying Unbound locally requires an active Supabase project.
    ```
 
 3. **Configure Environment Variables:**
-   Create a `.env.local` file at the root of the project with your Supabase credentials:
+   Copy the example file and fill in your values:
+   ```bash
+   cp .env.example .env.local
+   ```
+   Then edit `.env.local`:
    ```env
    NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
    NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+   ENCRYPTION_MASTER_SECRET=<generate with: openssl rand -base64 32>
+   MIGRATION_SECRET=<any random string for one-time migration auth>
    ```
+   > **Note:** `ENCRYPTION_MASTER_SECRET` enables AES-256-GCM encryption of all user content at rest. If omitted, the app still works but data is stored as plaintext.
 
 4. **Initialize Database Schema:**
    Go to your Supabase project's SQL editor and execute the raw contents of `database.sql`. This will automatically build all required tables, Row Level Security rules, and configure the Public Storage Buckets needed for Polaroids and Book Covers!

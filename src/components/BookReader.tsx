@@ -2,6 +2,7 @@
 
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import DOMPurify from 'isomorphic-dompurify';
 
 // ─── Utilities ────────────────────────────────────────────────────────────────
 
@@ -324,7 +325,7 @@ export default function BookReader({ pages, bookTitle, collection }: BookReaderP
           flex: 1,
           overflowY: 'auto'
         }}
-        dangerouslySetInnerHTML={{ __html: fp.html ?? '' }}
+        dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(fp.html ?? '') }}
       />
     </div>
   );
@@ -367,7 +368,7 @@ export default function BookReader({ pages, bookTitle, collection }: BookReaderP
           hyphens: 'auto',
           paddingBottom: '2rem',
         }}
-        dangerouslySetInnerHTML={{ __html: fp.html ?? '' }}
+        dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(fp.html ?? '') }}
       />
 
       <div style={{ marginTop: 'auto', paddingTop: '1.5rem', borderTop: '1px solid rgba(0,0,0,0.07)', display: 'flex', justifyContent: 'center', flexShrink: 0 }}>
