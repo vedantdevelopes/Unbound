@@ -11,6 +11,7 @@ interface Library {
   ts: number;
   viewId?: string;
   bookCount?: number;
+  bookIds?: string[];
 }
 
 function SkeletonCard() {
@@ -124,6 +125,64 @@ function LibraryCard({ lib, index }: { lib: Library; index: number }) {
           </Link>
         )}
       </div>
+
+      {/* PDF Download Section */}
+      {lib.viewId && lib.bookIds && lib.bookIds.length > 0 && (
+        <div style={{ marginTop: '0.85rem', borderTop: '1px solid rgba(232,217,184,0.06)', paddingTop: '0.85rem', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          {lib.bookIds.length === 1 ? (
+            <a
+              href={`/v/${lib.viewId}/book/${lib.bookIds[0]}?print=true`}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                fontFamily: 'var(--font-geist-mono)',
+                fontSize: '10px',
+                letterSpacing: '0.12em',
+                textTransform: 'uppercase',
+                color: '#c8902a',
+                textDecoration: 'none',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                transition: 'color 0.2s',
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.color = '#d4a040'}
+              onMouseLeave={(e) => e.currentTarget.style.color = '#c8902a'}
+            >
+              📥 Download PDF
+            </a>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', width: '100%', alignItems: 'center' }}>
+              <span style={{ fontFamily: 'var(--font-geist-mono)', fontSize: '8px', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'rgba(232,217,184,0.3)' }}>Download Book PDF:</span>
+              <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', justifyContent: 'center' }}>
+                {lib.bookIds.map((id, idx) => (
+                  <a
+                    key={id}
+                    href={`/v/${lib.viewId}/book/${id}?print=true`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      fontFamily: 'var(--font-geist-mono)',
+                      fontSize: '9px',
+                      color: '#c8902a',
+                      textDecoration: 'none',
+                      padding: '0.2rem 0.5rem',
+                      border: '1px solid rgba(200,144,42,0.25)',
+                      borderRadius: '4px',
+                      transition: 'all 0.2s',
+                      backgroundColor: 'rgba(200,144,42,0.03)',
+                    }}
+                    onMouseEnter={(e) => { e.currentTarget.style.color = '#d4a040'; e.currentTarget.style.borderColor = 'rgba(200,144,42,0.5)'; e.currentTarget.style.background = 'rgba(200,144,42,0.08)'; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.color = '#c8902a'; e.currentTarget.style.borderColor = 'rgba(200,144,42,0.25)'; e.currentTarget.style.background = 'rgba(200,144,42,0.03)'; }}
+                  >
+                    Book {idx + 1} 📥
+                  </a>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
     </motion.div>
   );
 }
@@ -142,10 +201,15 @@ export default function CreatorDashboard() {
         .select('view_id, books(id)')
         .eq('edit_id', lib.editId)
         .single();
+      
+      const rawBooks = data?.books || [];
+      const bookIds = Array.isArray(rawBooks) ? rawBooks.map((b: { id: string }) => b.id) : [];
+
       return {
         ...lib,
         viewId:    data?.view_id,
-        bookCount: data?.books?.length ?? 0,
+        bookCount: bookIds.length,
+        bookIds:   bookIds,
       };
     })).then(enriched => {
       setLibraries(enriched);

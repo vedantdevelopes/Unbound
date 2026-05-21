@@ -239,9 +239,31 @@ export default async function EditDashboard({ params }: { params: Promise<{ book
                       <p style={{ fontFamily: 'var(--font-playfair)', fontSize: '1rem', color: book.is_published !== false ? '#e8d9b8' : 'rgba(232,217,184,0.35)', lineHeight: 1.3, wordBreak: 'break-word', marginBottom: '0.25rem' }}>
                         {book.title}
                       </p>
-                      <p style={{ fontFamily: 'var(--font-geist-mono)', fontSize: '9px', letterSpacing: '0.15em', textTransform: 'uppercase', color: book.is_published !== false ? 'rgba(16,185,129,0.7)' : 'rgba(232,217,184,0.25)' }}>
-                        {book.is_published !== false ? '● Live' : '○ Hidden'}
-                      </p>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '0.3rem' }}>
+                        <p style={{ fontFamily: 'var(--font-geist-mono)', fontSize: '9px', letterSpacing: '0.15em', textTransform: 'uppercase', color: book.is_published !== false ? 'rgba(16,185,129,0.7)' : 'rgba(232,217,184,0.25)', margin: 0 }}>
+                          {book.is_published !== false ? '● Live' : '○ Hidden'}
+                        </p>
+                        <a
+                          href={`/v/${collection.view_id}/book/${book.id}?print=true`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style={{
+                            fontFamily: 'var(--font-geist-mono)',
+                            fontSize: '9.5px',
+                            letterSpacing: '0.1em',
+                            textTransform: 'uppercase',
+                            color: '#c8902a',
+                            textDecoration: 'none',
+                            borderBottom: '1px dashed rgba(200,144,42,0.4)',
+                            transition: 'color 0.2s',
+                          }}
+                          onClick={(e) => e.stopPropagation()}
+                          onMouseEnter={(e) => e.currentTarget.style.color = '#d4a040'}
+                          onMouseLeave={(e) => e.currentTarget.style.color = '#c8902a'}
+                        >
+                          PDF 📥
+                        </a>
+                      </div>
                     </div>
                   </Link>
                 </div>

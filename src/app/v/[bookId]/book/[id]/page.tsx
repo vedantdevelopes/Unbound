@@ -78,7 +78,13 @@ export default async function ViewPublicBook({ params }: { params: Promise<{ boo
       </header>
 
       <div className="container" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80vh' }}>
-        <BookReader pages={pages} bookTitle={bookTitle} collection={decryptedCollection} />
+        <BookReader
+          pages={pages}
+          bookTitle={bookTitle}
+          collection={decryptedCollection}
+          coverImageUrl={book.cover_image_url}
+          spineColor={book.spine_color}
+        />
       </div>
 
       <div style={{ textAlign: 'center', padding: '2rem', opacity: 0.6 }}>

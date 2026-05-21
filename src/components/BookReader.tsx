@@ -111,9 +111,11 @@ interface BookReaderProps {
   pages: { id: string; title: string; content: string; media_urls?: string[] }[];
   bookTitle: string;
   collection?: { recipient_name: string; sender_name: string; theme?: string };
+  coverImageUrl?: string | null;
+  spineColor?: string | null;
 }
 
-export default function BookReader({ pages, bookTitle, collection }: BookReaderProps) {
+export default function BookReader({ pages, bookTitle, collection, coverImageUrl, spineColor }: BookReaderProps) {
   // Mobile detection
   const [isMobile, setIsMobile] = useState(false);
   useEffect(() => {
@@ -165,6 +167,24 @@ export default function BookReader({ pages, bookTitle, collection }: BookReaderP
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const maxIndex = Math.max(0, flipPages.length - 1);
+
+  const handleDownloadPDF = () => {
+    document.body.classList.add('unbound-print-mode-book');
+    window.print();
+    document.body.classList.remove('unbound-print-mode-book');
+  };
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('print') === 'true') {
+        const timer = setTimeout(() => {
+          handleDownloadPDF();
+        }, 1500);
+        return () => clearTimeout(timer);
+      }
+    }
+  }, []);
 
   const goNext = () => {
     if (currentIndex < maxIndex && !flipping) {
@@ -506,6 +526,254 @@ export default function BookReader({ pages, bookTitle, collection }: BookReaderP
           pointer-events: none;
           box-shadow: 0 0 12px 4px rgba(255,255,255,0.3);
         }
+
+        /* Screen Styles: hide the printable container completely */
+        .unbound-printable-book {
+          display: none;
+        }
+
+        /* Print Styles */
+        @media print {
+          @page {
+            size: auto;
+            margin: 15mm;
+          }
+
+          body.unbound-print-mode-book {
+            background: #ffffff !important;
+            color: #1a1a1a !important;
+          }
+          
+          body.unbound-print-mode-book * {
+            visibility: hidden;
+          }
+          
+          body.unbound-print-mode-book .unbound-printable-book,
+          body.unbound-print-mode-book .unbound-printable-book * {
+            visibility: visible;
+          }
+          
+          body.unbound-print-mode-book .unbound-printable-book {
+            display: block !important;
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            background: #ffffff !important;
+            color: #2a2626 !important;
+          }
+          
+          /* Each page should start on a fresh sheet */
+          .unbound-printable-book .print-page {
+            page-break-after: always;
+            break-after: page;
+            position: relative;
+            box-sizing: border-box;
+            width: 100%;
+            padding: 10mm 10mm;
+            background: #ffffff !important;
+            color: #2a2626 !important;
+          }
+          
+          .unbound-printable-book .print-page:last-child {
+            page-break-after: avoid;
+            break-after: avoid;
+          }
+          
+          .unbound-printable-book .cover-page {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            text-align: center;
+            border: 2px solid #8b7d6b;
+            padding: 20mm 15mm;
+            height: 230mm;
+            box-sizing: border-box;
+            margin: 0;
+          }
+          
+          .unbound-printable-book .dedication-page {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            height: 230mm;
+            box-sizing: border-box;
+          }
+          
+          .unbound-printable-book .toc-page {
+            /* Table of contents page */
+          }
+          
+          .unbound-printable-book .end-page {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            height: 230mm;
+            box-sizing: border-box;
+          }
+          
+          .unbound-printable-book h1.print-book-title {
+            font-family: var(--font-playfair), serif;
+            font-size: 3.5rem;
+            color: #2a2626;
+            margin-top: 30mm;
+            margin-bottom: 5mm;
+            line-height: 1.2;
+          }
+          
+          .unbound-printable-book .print-book-subtitle {
+            font-family: var(--font-outfit), sans-serif;
+            font-size: 11px;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: #8b7d6b;
+            margin-bottom: 20mm;
+          }
+          
+          .unbound-printable-book .print-book-curator {
+            font-family: var(--font-instrument), serif;
+            font-style: italic;
+            font-size: 1.5rem;
+            color: #4a3d35;
+            margin-top: auto;
+            margin-bottom: 10mm;
+          }
+          
+          .unbound-printable-book .print-cursive {
+            font-family: var(--font-cursive), cursive;
+            font-size: 2.2rem;
+            line-height: 1.5;
+            color: #4a3d35;
+            transform: rotate(-1.5deg);
+          }
+          
+          .unbound-printable-book .print-chapter-num {
+            font-family: var(--font-outfit), sans-serif;
+            font-size: 11px;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: #8b7d6b;
+            margin-bottom: 5mm;
+            text-align: center;
+          }
+          
+          .unbound-printable-book .print-chapter-title {
+            font-family: var(--font-playfair), serif;
+            font-size: 2.4rem;
+            color: #2a2626;
+            margin-bottom: 10mm;
+            text-align: center;
+            line-height: 1.2;
+          }
+          
+          .unbound-printable-book .print-divider {
+            margin: 8mm auto;
+            width: 60px;
+            height: 1px;
+            background-color: rgba(0, 0, 0, 0.15);
+          }
+          
+          .unbound-printable-book .print-polaroid-container {
+            display: flex;
+            justify-content: center;
+            margin: 10mm 0 15mm 0;
+            page-break-inside: avoid;
+            break-inside: avoid;
+          }
+          
+          .unbound-printable-book .print-polaroid {
+            padding: 10px 10px 30px 10px;
+            background: #ffffff;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            transform: rotate(-1deg);
+            display: inline-block;
+          }
+          
+          .unbound-printable-book .print-polaroid img {
+            width: 180px;
+            height: 180px;
+            object-fit: cover;
+            display: block;
+          }
+          
+          .unbound-printable-book .print-body {
+            font-family: var(--font-inter), sans-serif;
+            font-size: 11pt;
+            line-height: 1.8;
+            color: #3a3431;
+            text-align: justify;
+            margin-top: 10mm;
+          }
+          
+          .unbound-printable-book .print-body p {
+            margin-bottom: 1.2em;
+            page-break-inside: avoid;
+            break-inside: avoid;
+          }
+          
+          .unbound-printable-book .print-body p:first-of-type::first-letter {
+            font-family: var(--font-instrument), serif;
+            font-style: italic;
+            float: left;
+            font-size: 4.5rem;
+            line-height: 0.8;
+            padding-top: 0.2rem;
+            padding-right: 0.6rem;
+            margin-bottom: -0.2rem;
+            color: #a33327;
+          }
+          
+          .unbound-printable-book .print-body blockquote {
+            border-left: 2px solid #a33327;
+            padding: 6px 0 6px 15px;
+            margin: 20px 0;
+            font-style: italic;
+            color: #6a5f57;
+            background: rgba(0, 0, 0, 0.02);
+            page-break-inside: avoid;
+            break-inside: avoid;
+          }
+          
+          .unbound-printable-book .print-body h3 {
+            font-family: var(--font-playfair), serif;
+            font-size: 1.4rem;
+            margin-top: 30px;
+            margin-bottom: 15px;
+            color: #2a2626;
+            page-break-after: avoid;
+            break-after: avoid;
+          }
+          
+          .unbound-printable-book .print-body hr {
+            border: none;
+            text-align: center;
+            color: #b0a89a;
+            margin: 30px 0;
+          }
+          
+          .unbound-printable-book .print-body hr::after {
+            content: '✦ ✦ ✦';
+            font-size: 8pt;
+            letter-spacing: 0.5em;
+          }
+          
+          .unbound-printable-book .print-page-num {
+            position: absolute;
+            bottom: 10mm;
+            left: 0;
+            right: 0;
+            text-align: center;
+            font-family: var(--font-instrument), serif;
+            font-size: 10pt;
+            color: #c0b8af;
+          }
+        }
       ` }} />
 
       <motion.div 
@@ -720,7 +988,168 @@ export default function BookReader({ pages, bookTitle, collection }: BookReaderP
             NEXT &rarr;
           </button>
         </div>
+
+        {/* Download PDF button */}
+        <button
+          onClick={handleDownloadPDF}
+          style={{
+            marginTop: '1.5rem',
+            background: '#c8902a',
+            border: 'none',
+            color: '#0c0a08',
+            padding: '0.65rem 1.6rem',
+            borderRadius: '20px',
+            cursor: 'pointer',
+            fontSize: '11px',
+            fontFamily: 'var(--font-geist-mono)',
+            letterSpacing: '0.15em',
+            textTransform: 'uppercase',
+            fontWeight: 700,
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            boxShadow: '0 4px 12px rgba(200,144,42,0.2)',
+            transition: 'all 0.2s ease',
+          }}
+          onMouseEnter={e => {
+            e.currentTarget.style.background = '#d4a040';
+            e.currentTarget.style.transform = 'translateY(-1px)';
+            e.currentTarget.style.boxShadow = '0 6px 16px rgba(200,144,42,0.3)';
+          }}
+          onMouseLeave={e => {
+            e.currentTarget.style.background = '#c8902a';
+            e.currentTarget.style.transform = 'translateY(0)';
+            e.currentTarget.style.boxShadow = '0 4px 12px rgba(200,144,42,0.2)';
+          }}
+        >
+          <span>📥 Download Book (PDF)</span>
+        </button>
+
       </motion.div>
+
+      {/* Hidden printable book container */}
+      <div className="unbound-printable-book">
+        {/* COVER PAGE */}
+        <div className="print-page cover-page" style={{ 
+          backgroundColor: spineColor || '#38322e', 
+          borderColor: coverImageUrl ? 'transparent' : '#8b7d6b' 
+        }}>
+          {coverImageUrl ? (
+            <div style={{ margin: 'auto 0', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2rem' }}>
+              <img 
+                src={coverImageUrl} 
+                alt="Book Cover" 
+                style={{ 
+                  width: '240px', 
+                  height: '340px', 
+                  objectFit: 'cover', 
+                  boxShadow: '0 10px 25px rgba(0,0,0,0.3)',
+                  border: '4px solid #fff',
+                  borderRadius: '4px'
+                }} 
+              />
+              <h1 className="print-book-title" style={{ marginTop: '0', color: '#fff' }}>{bookTitle}</h1>
+            </div>
+          ) : (
+            <div style={{ margin: 'auto 0' }}>
+              <h1 className="print-book-title">{bookTitle}</h1>
+              <div className="print-divider" style={{ width: '120px', height: '2px', backgroundColor: '#8b7d6b', margin: '20px auto' }} />
+              <p className="print-book-subtitle">A digital collection</p>
+            </div>
+          )}
+          
+          <div className="print-book-curator" style={{ color: coverImageUrl ? '#fff' : '#4a3d35' }}>
+            <p style={{ fontSize: '0.5em', textTransform: 'uppercase', letterSpacing: '0.15em', marginBottom: '8px', opacity: 0.8 }}>curated for</p>
+            <p style={{ fontFamily: 'var(--font-heading)', fontSize: '1.8rem', fontWeight: 'bold' }}>{collection?.recipient_name}</p>
+            <p style={{ fontSize: '0.5em', textTransform: 'uppercase', letterSpacing: '0.15em', margin: '8px 0', opacity: 0.8 }}>by</p>
+            <p style={{ fontFamily: 'var(--font-heading)', fontSize: '1.8rem' }}>{collection?.sender_name}</p>
+          </div>
+        </div>
+
+        {/* DEDICATION PAGE */}
+        <div className="print-page dedication-page">
+          <div className="print-cursive">
+            <p>For {collection?.recipient_name ?? 'You'},</p>
+            <p style={{ fontSize: '0.6em', marginTop: '1.5rem', opacity: 0.8 }}>with love</p>
+            <p style={{ fontSize: '0.5em', opacity: 0.7 }}>from {collection?.sender_name ?? 'Me'}</p>
+          </div>
+          <div style={{ marginTop: '5rem', fontSize: '2.5rem', opacity: 0.25 }}>❧</div>
+        </div>
+
+        {/* INDEX PAGE */}
+        <div className="print-page toc-page">
+          <div style={{ fontFamily: 'var(--font-ui)', fontSize: '10px', letterSpacing: '0.2em', textTransform: 'uppercase', color: '#8b7d6b', borderBottom: '1px solid rgba(0,0,0,0.1)', paddingBottom: '0.8rem', marginBottom: '4rem' }}>
+            Contents
+          </div>
+          <div style={{ textAlign: 'center', marginBottom: '4rem' }}>
+            <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: '2.5rem', color: '#2a2626', fontWeight: 400 }}>Index</h2>
+            <div style={{ marginTop: '0.8rem', fontSize: '1.5rem', opacity: 0.3 }}>❧</div>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', maxWidth: '550px', margin: '0 auto' }}>
+            {pages.map((page, i) => (
+              <div key={page.id} style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem' }}>
+                <span style={{ fontFamily: 'var(--font-ui)', fontSize: '11px', color: '#8b7d6b', minWidth: '35px', letterSpacing: '0.05em' }}>
+                  {toRoman(i + 1)}.
+                </span>
+                <span style={{ fontFamily: 'var(--font-inter)', fontSize: '1.05rem', color: '#2a2626', fontWeight: 500 }}>
+                  {page.title}
+                </span>
+                <span style={{ flexGrow: 1, borderBottom: '1px dotted rgba(0,0,0,0.25)', marginBottom: '5px' }} />
+                <span style={{ fontFamily: 'var(--font-instrument)', fontSize: '1.1rem', color: '#8b7d6b' }}>
+                  {i + 4} {/* Cover is 1, Dedication is 2, TOC is 3, so first chapter is page 4 */}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* CHAPTER PAGES */}
+        {pages.map((page, i) => (
+          <div key={page.id} className="print-page">
+            <div style={{
+              display: 'flex', justifyContent: 'space-between', fontFamily: 'var(--font-ui)', fontSize: '10px', letterSpacing: '0.15em',
+              textTransform: 'uppercase', color: '#8b7d6b', borderBottom: '1px solid rgba(0,0,0,0.1)', paddingBottom: '0.8rem', marginBottom: '3rem',
+            }}>
+              <span>{bookTitle}</span>
+              <span>Chapter {toRoman(i + 1)}</span>
+            </div>
+
+            <div className="print-chapter-num">Chapter {toRoman(i + 1)}</div>
+            <h2 className="print-chapter-title">{page.title}</h2>
+            <div className="print-divider" />
+
+            {page.media_urls && page.media_urls.length > 0 && (
+              <div className="print-polaroid-container">
+                <div className="print-polaroid">
+                  <img src={page.media_urls[0]} alt="Chapter illustration" />
+                </div>
+              </div>
+            )}
+
+            <div 
+              className="print-body"
+              dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(page.content ?? '') }}
+            />
+            
+            <div className="print-page-num">
+              {i + 4}
+            </div>
+          </div>
+        ))}
+
+        {/* END PAGE */}
+        <div className="print-page end-page">
+          <div style={{ fontFamily: 'var(--font-instrument)', fontSize: '3rem', color: '#2a2626' }}>
+            — fin —
+          </div>
+          {collection?.sender_name && (
+            <div style={{ marginTop: '2.5rem', fontFamily: 'var(--font-ui)', fontSize: '11px', letterSpacing: '0.2em', textTransform: 'uppercase', color: '#8b7d6b' }}>
+              written with love by {collection.sender_name}
+            </div>
+          )}
+          <div style={{ marginTop: '5rem', fontSize: '2rem', opacity: 0.2 }}>❧</div>
+        </div>
+      </div>
     </>
   );
 }
